@@ -1,0 +1,95 @@
+body{
+    font-size: 18px;
+    font-family: 'epilogue','Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    background-color: hsl(0,0%,98%);
+}
+header{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.title{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.title ul{
+    list-style-type: none;
+    display: flex;
+}
+.title ul li{
+    margin-right: 16px;
+    padding: 10px;
+    cursor: pointer;
+}
+.auth{
+   align-items: center;
+}
+#login{
+    border: 0px;
+    background-color: inherit;
+    font-size: 18px;
+    font-weight: bolder;
+}
+#register{
+    border-radius: 20px;
+   color: hsl(0,0%,8%);
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bolder;
+    margin-left: 20px;
+}
+main{
+    display: flex;
+    height: 80vh;
+    margin-bottom: 2vh;
+    justify-content: center;
+}
+.container{
+    display: flex;
+    margin-bottom: 2vh;
+    justify-content: space-between;
+    width: 80vw;
+}
+.container img{
+    width: auto;
+    height:100%;
+}
+.details{
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.details h2{
+    font-size: 5rem;
+}
+#learnmore{
+    border-radius: 12px;
+    border: none;
+    color: hsl(0,0%,98%);
+   background-color: hsl(0,0%,8%);
+    padding: 16px;
+    font-size: 15px;
+    font-weight: bolder;
+    margin-top: 20px;
+}
+.associations{
+    display: flex;
+    flex-direction: row;
+   
+}
+.associations img{
+    margin-left: 20px;
+    height: 2vw;
+}
+.attribution {
+    font-size: 11px;
+    text-align: center;
+  }
+  .attribution a {
+    color: hsl(228, 45%, 44%);
+  }
