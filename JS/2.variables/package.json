@@ -1,0 +1,13 @@
+{
+  "name": "2.variables",
+  "version": "1.0.0",
+  "main": "variable.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon variable.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
