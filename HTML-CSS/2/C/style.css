@@ -1,0 +1,223 @@
+body {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0px 50px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+header img[src*="logo.png"] {
+  height: 50px;
+}
+
+header ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+header ul li {
+  margin-right: 50px;
+  align-items: center;
+  color: grey;
+  font-size: 16px;
+  cursor: pointer;
+}
+#market {
+  color: black;
+}
+.left {
+  display: flex;
+  align-items: center;
+  margin-right: 40px;
+}
+.left img[alt="drop-down"] {
+  height: 10px;
+}
+.left img[alt="cart"] {
+  height: 25px;
+}
+.left img[alt="userprofile"] {
+  object-fit: cover;
+  background-color: aqua;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border-color: black;
+}
+main {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  height: 90vh;
+}
+.container {
+  display: flex;
+  justify-content: space-between;
+}
+.page1,
+.order {
+  margin-right: 2vw;
+  background-color: hsla(204, 100%, 79%, 0.2);
+  padding-right: 7vw;
+  padding-left: 7vw;
+  color: gray;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+.page1 h2 {
+  color: black;
+  margin-bottom: 15px;
+}
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+input::placeholder {
+  display: flex;
+  justify-content: space-between;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: black;
+  margin-bottom: 16px;
+  margin-top: 14px;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  border: none;
+}
+.reg {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reg button {
+  padding: 10px 15px;
+
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+#login {
+  background-color: #007bff;
+  color: white;
+}
+#login:hover {
+  background-color: #0056b3;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+#order-cancel {
+  background-color: inherit;
+
+  color: inherit;
+}
+#details {
+  background: #007bff;
+  color: white;
+}
+button {
+  padding: 14px;
+  padding-right: 30px;
+  padding-left: 30px;
+  border-radius: 16px;
+  margin-left: 20px;
+  font-weight: bolder;
+  border: none;
+}
+img[alt="tick"] {
+  height: 10px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.order {
+  background-color: hsla(204, 100%, 79%, 0.2);
+}
+.order h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: black;
+}
+.order img {
+  border-radius: 10px;
+  margin-bottom: 10px;
+  height: 20vh;
+  width: 100%;
+  object-fit: cover;
+}
+.desc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.inc-dec {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.inc-dec button {
+  border: 1px black;
+  font-size: 20px;
+}
+.code {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+  align-items: center;
+  height: 20px;
+}
+
+#apply {
+  background: #007bff;
+  color: white;
+  padding: auto;
+}
+.sub-total,
+.tax,
+.shipping,
+.total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  margin-top: 10px;
+  color: black;
+}
+
+.total {
+  font-weight: bold;
+}
+#account {
+  color: rgb(0, 101, 101);
+}
+.reg-page {
+  margin-bottom: 10vh;
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}

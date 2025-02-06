@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>reg page</title>
+  </head>
+  <body>
+    <header>
+      <img src="./Images/logo.png" alt="logo" />
+      <ul>
+        <li>Home</li>
+        <li>Shop</li>
+        <li>Contact</li>
+        <li>Help</li>
+      </ul>
+      <div class="left">
+        <ul>
+          <li>
+            Account &ThinSpace;
+            <img src="./Images/down-arrow.png" alt="drop-down" />
+          </li>
+          <li id="market">
+            <img src="./Images/market.png" alt="cart" /> 3 items
+          </li>
+          <li><img src="./Images/Profile.jpg" alt="userprofile" /></li>
+        </ul>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <div class="page1">
+          <div class="steps">
+            <span id="account">Account</span> &dash;
+            <img src="./Images/checked.png" alt="tick" /> &dash;
+            <span id="shipping">Shipping</span> &hyphen;
+            <img src="./Images/checked.png" alt="tick" /> &dash;
+            <span id="payment">Payment</span>
+          </div>
+          <div class="reg-page">
+            <h2>Account Details</h2>
+            <form>
+              <label for="email">Email Address</label>
+              <input type="email" placeholder="email@myemail.com" />
+              <label for="Password">Password</label>
+              <input type="password" name="password" placeholder="Password" />
+              <div class="reg">
+                <label for="register">Register for Account</label>
+                <button id="login">Login</button>
+              </div>
+            </form>
+          </div>
+          <hr />
+          <div class="footer">
+            <button id="order-cancel">Cancel Order</button>
+            <button id="details">Shipping details</button>
+          </div>
+        </div>
+        <div class="order">
+          <h2>Order Summary</h2>
+          <img src="./Images/headphones.jpg" alt="headphones" />
+          <div class="desc">
+            <div class="price">
+              <h2>Sony wireless headphones</h2>
+              <p>&pound; 320.45</p>
+            </div>
+            <div class="inc-dec">
+              <button>-</button>
+              <span>1</span>
+              <button>+</button>
+            </div>
+          </div>
+          <label for="card">Gift Card / Discount Card</label>
+          <div class="code">
+            <input type="text" name="code" /><button id="apply">Apply</button>
+          </div>
+          <div class="sub-total">
+            <span>Sub total</span>
+            <p>&pound;316.55</p>
+          </div>
+          <div class="tax">
+            <span>Tax</span>
+            <p>&pound; 3.45</p>
+          </div>
+          <div class="shipping">
+            <span>Shipping</span>
+            <p>Free</p>
+          </div>
+          <div class="total">
+            <span>Total</span>
+            <p>&pound; 320.45</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
