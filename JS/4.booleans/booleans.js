@@ -41,7 +41,7 @@ function processWithdrawal(
     return "Transaction failed: Incorrect Password";
   } else if (verifyMFA(inputMFACode) == false) {
     return "Transaction failed: MFA failed";
-  } else if ((user.balance, withdrawalAmount) == false) {
+  } else if (checkBalance(user.balance, withdrawalAmount) == false) {
     return "Transaction failed: Insufficient balance";
   } else if (checkDailyLimit(withdrawalAmount, user.dailyLimit) == false) {
     return "Transaction failed:Amount exceeds daily limit";
