@@ -1,7 +1,21 @@
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
+const user = {
+  hashedPassword: bcrypt.hashSync("userPassword", 10),
+  balance: 1000,
+  dailyLimit: 500,
+};
+
+const correctMFACode = "123456";
+const inputPassword = "userPassword";
+const inputMFACode = "123456";
+const withdrawalAmount = 200;
+
+console.log(
+  processWithdrawal(user, inputPassword, inputMFACode, withdrawalAmount)
+);
 
 function verifyPassword(inputPassword, storedHashedPassword) {
-  if (bcrypt.compare(inputPassword, storedHashedPassword) == true) {
+  if (bcrypt.compareSync(inputPassword, storedHashedPassword) == true) {
     return true;
   } else {
     return false;
@@ -39,7 +53,7 @@ function processWithdrawal(
 ) {
   if (verifyPassword(inputPassword, user.hashedPassword) == false) {
     return "Transaction failed: Incorrect Password";
-  } else if (verifyMFA(inputMFACode) == false) {
+  } else if (verifyMFA(inputMFACode, correctMFACode) == false) {
     return "Transaction failed: MFA failed";
   } else if (checkBalance(user.balance, withdrawalAmount) == false) {
     return "Transaction failed: Insufficient balance";
