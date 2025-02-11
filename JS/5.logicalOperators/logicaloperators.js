@@ -57,3 +57,64 @@ console.log(removeDuplicates("hello world")); //Output: 'helo wrd'
 console.log(removeDuplicates("aaaaaa")); //Output: 'a'
 console.log(removeDuplicates("abcd")); //abcd;
 console.log(removeDuplicates("aabbcc")); //abc
+
+//6. Count Palindromes in a String
+// Write a function to count how many distinct palindromes are in a given string. A palindrome is considered distinct based on its start and end position in the string.
+function countPalindromes(str) {
+  let count = 0;
+  let seen = new Set();
+
+  for (let i = 0; i < str.length; i++) {
+    for (let j = i + 1; j <= str.length; j++) {
+      let substring = str.slice(i, j);
+      if (isPalindrome(substring) && !seen.has(substring)) {
+        seen.add(substring);
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+console.log(countPalindromes("ababa")); // 7
+console.log(countPalindromes("racecar")); // 7
+console.log(countPalindromes("aabb")); // 4
+console.log(countPalindromes("a")); // 1
+console.log(countPalindromes("abc")); // 3
+
+//7. Longest Common Prefix
+// Write a function to find the longest common prefix string amongst an array
+// of strings. If there is no common prefix, return an empty string.
+function longestCommonPrefix(arr) {
+  if (arr.length === 0) return "";
+  let prefix = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    while (arr[i].indexOf(prefix) !== 0) {
+      prefix = prefix.substring(0, prefix.length - 1);
+      if (prefix === "") return `''`;
+    }
+  }
+  return `'${prefix}'`;
+}
+
+console.log(longestCommonPrefix(["flower", "flow", "flight"])); // fl
+console.log(longestCommonPrefix(["dog", "racecar", "car"])); // ''
+console.log(
+  longestCommonPrefix(["interspecies", "interstellar", "interstate"])
+); // inters
+console.log(longestCommonPrefix(["prefix", "prefixes", "preform"])); // pref
+console.log(longestCommonPrefix(["apple", "banana", "cherry"])); // ''
+
+// 8. Case Insensitive Palindrome
+// Modify the palindrome function to be case insensitive, meaning it should ignore upper and lower case differences when checking for a palindrome.
+function isCaseInsensitivePalindrome(str) {
+  const normalStr = str.toLowerCase();
+  const str1 = normalStr.split("").reverse().join("");
+  return normalStr === str1;
+}
+console.log(isCaseInsensitivePalindrome("Aba")); //true
+console.log(isCaseInsensitivePalindrome("Racecar")); //true
+console.log(isCaseInsensitivePalindrome("Palindrome")); //false
+console.log(isCaseInsensitivePalindrome("Madam")); //true
+console.log(isCaseInsensitivePalindrome("Hello")); //false
