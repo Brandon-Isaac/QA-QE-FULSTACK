@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "name": "6.functions",
+  "version": "1.0.0",
+  "main": "calc.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon calc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

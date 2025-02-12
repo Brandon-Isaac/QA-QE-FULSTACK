@@ -1,0 +1,110 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Segoe UI, system-ui, sans-serif;
+}
+
+.calculator {
+  width: 25vw;
+  height: auto;
+  background: #f0f0f0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  gap: 8px;
+}
+
+.menu-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.menu-icon span {
+  height: 2px;
+  background: #666;
+  width: 100%;
+}
+
+.title {
+  font-size: 14px;
+  color: #333;
+}
+.small-display {
+  text-align: center right;
+  padding: 20px 16px;
+  font-size: 21px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.display {
+  text-align: right;
+  padding: 20px 16px;
+  font-size: 42px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.memory-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.memory-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  color: #666;
+  font-size: 12px;
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.btn {
+  background: white;
+  border: none;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn:hover {
+  background: #f5f5f5;
+}
+
+.equals {
+  background: #0067c0;
+  color: white;
+}
+
+.equals:hover {
+  background: #0078d4;
+}
+
+.top-btn {
+  background: #f9f9f9;
+}

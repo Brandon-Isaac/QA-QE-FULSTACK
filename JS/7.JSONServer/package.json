@@ -1,0 +1,13 @@
+{
+  "name": "7.jsonserver",
+  "version": "1.0.0",
+  "main": "json.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
