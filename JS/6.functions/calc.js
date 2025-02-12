@@ -43,14 +43,7 @@ class Calculator {
   }
 
   calculate() {
-    if (!this.operation || this.newNumber) {
-      this.currentValue =
-        this.previousValue !== null
-          ? this.previousValue.toString()
-          : this.currentValue;
-      this.updateDisplay();
-      return;
-    }
+    if (!this.operation || this.newNumber) return;
     const prev = parseFloat(this.previousValue);
     const current = parseFloat(this.currentValue);
     let result;
@@ -100,6 +93,67 @@ class Calculator {
     this.updateDisplay();
   }
 
+  toggleSign() {
+    if (this.currentValue !== "0") {
+      this.currentValue = this.currentValue.startsWith("-")
+        ? this.currentValue.slice(1)
+        : "-" + this.currentValue;
+      this.updateDisplay();
+    }
+  }
+
+  percentage() {
+    this.currentValue = (parseFloat(this.currentValue) / 100).toString();
+    this.updateDisplay();
+  }
+
+  squareRoot() {
+    const value = parseFloat(this.currentValue);
+    this.currentValue =
+      value < 0 ? "Invalid input" : Math.sqrt(value).toString();
+    this.newNumber = true;
+    this.updateDisplay();
+  }
+
+  square() {
+    this.currentValue = (parseFloat(this.currentValue) ** 2).toString();
+    this.newNumber = true;
+    this.updateDisplay();
+  }
+
+  reciprocal() {
+    const value = parseFloat(this.currentValue);
+    this.currentValue =
+      value === 0 ? "Cannot divide by zero" : (1 / value).toString();
+    this.newNumber = true;
+    this.updateDisplay();
+  }
+
+  memoryStore() {
+    this.memory = parseFloat(this.currentValue);
+    this.newNumber = true;
+  }
+
+  memoryRecall() {
+    this.currentValue = this.memory.toString();
+    this.newNumber = true;
+    this.updateDisplay();
+  }
+
+  memoryClear() {
+    this.memory = 0;
+  }
+
+  memoryAdd() {
+    this.memory += parseFloat(this.currentValue);
+    this.newNumber = true;
+  }
+
+  memorySubtract() {
+    this.memory -= parseFloat(this.currentValue);
+    this.newNumber = true;
+  }
+
   updateSmallDisplay(value) {
     this.smallDisplayValue += value;
     this.updateDisplay();
@@ -119,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", () => calculator.calculate());
     } else if (text === "C") {
       button.addEventListener("click", () => calculator.clear());
-    } else if (text === "CE") {
+    } else if (text === "CE" || text === "⌫") {
       button.addEventListener("click", () => calculator.clearEntry());
     } else if (text === "+/-") {
       button.addEventListener("click", () => calculator.toggleSign());
