@@ -1,24 +1,3 @@
-// document.addEventListener("DOMContentLoaded", () => {
-//   fetch("/c:/Users/isaac/Desktop/QA-QE-FULSTACK/JS/7.JSONServer/db.json")
-//     .then((response) => response.json())
-//     .then((data) => {
-//       const productList = document.getElementById("product-list");
-//       data.products.forEach((product) => {
-//         const productDiv = document.createElement("div");
-//         productDiv.className = "product";
-//         productDiv.innerHTML = `
-//                     <h2>${product.name}</h2>
-//                     <p>${product.description}</p>
-//                     <p class="price">$${product.price}</p>
-//                     <p>Category: ${product.category}</p>
-//                     <p>Stock: ${product.stock}</p>
-//                 `;
-//         productList.appendChild(productDiv);
-//       });
-//     })
-//     .catch((error) => console.error("Error fetching products:", error));
-// });
-// an object of objects
 const products = [
   {
     id: "001",
@@ -64,4 +43,18 @@ const products = [
     stock: 200,
   },
 ];
-console.log(JSON.stringify(products, null, 2));
+
+const productList = document.getElementById("product-list");
+
+products.forEach((product) => {
+  const productCard = document.createElement("div");
+  productCard.classList.add("product-card");
+  productCard.innerHTML = `
+      <h2>${product.name}</h2>
+      <p><strong>Description:</strong> ${product.description}</p>
+      <p class="price">$${product.price.toFixed(2)}</p>
+      <p><strong>Category:</strong> ${product.category}</p>
+      <p><strong>Stock:</strong> ${product.stock} available</p>
+  `;
+  productList.appendChild(productCard);
+});

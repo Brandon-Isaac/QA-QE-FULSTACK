@@ -1,5 +1,6 @@
 body {
   display: flex;
+  background-color: burlywood;
   align-items: center;
   justify-content: center;
   margin: 10px;
@@ -11,9 +12,9 @@ body {
 .calculator {
   width: 25vw;
   height: auto;
-  background: #f0f0f0;
+  background: #bfbcbc;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #ffffff;
   border-radius: 4px;
 }
 
