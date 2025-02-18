@@ -73,19 +73,19 @@ personalInfo.innerHTML = `<h2>Personal Info</h2>
 <p>${email}<p>`;
 
 shippingAddress.innerHTML = `<h2>Shipping Address</h2>
-<p>${street}<p>
-<p>${city}<p>
-<p>${state}<p>
-<p>${postalCode}<p>
-<p>${country}<p>
+<p>${street}
+${city}
+${state}
+${postalCode}
+${country}<p>
 `;
 
 billingAddress.innerHTML = `<h2>Billing Address</h2>
-<p>${billingStreet}<p>
-<p>${billingCity}<p>
-<p>${billingState}<p>
-<p>${billingPostalCode}<p>
-<p>${billingCountry}<p>
+<p>${billingStreet}
+${billingCity}
+${billingState}
+${billingPostalCode}
+${billingCountry}<p>
 `;
 transaction.innerHTML = `<h2>Transactions</h2>
 ${user.payment.transactions
