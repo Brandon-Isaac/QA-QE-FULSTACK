@@ -1,0 +1,19 @@
+{
+  "name": "10.asynchronousjs",
+  "version": "1.0.0",
+  "main": "books.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon books.js",
+    "dev": "json-server --watch books.json --port 3000"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "json-server": "^1.0.0-beta.3"
+  }
+}
