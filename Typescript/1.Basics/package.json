@@ -1,0 +1,15 @@
+{
+  "name": "1.basics",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc",
+    "dev": "nodemon basics.ts",
+    "dev:start": "nodemon basics.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
