@@ -15,11 +15,13 @@ export const handleResponse = (response) => {
 };
 export function move(direction, distance) {
     // Move the specified distance in the given direction
-    return typeof direction + distance;
+    if (direction === 'up' || direction === 'down' || direction === 'left' || direction === 'right') {
+        return direction + distance;
+    }
+    else {
+        throw new Error('error');
+    }
 }
-move('up', 10);
-move('left', 5);
-// move('down-left',20,)
 export const somethingDangerous = () => {
     if (Math.random() > 0.5) {
         throw new Error('Something went wrong');

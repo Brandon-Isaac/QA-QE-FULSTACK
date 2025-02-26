@@ -36,11 +36,13 @@ export const handleResponse = (response: APIResponse) => {
 type Direction="up"|"down"|"left"|"right"
 export function move(direction:Direction, distance: number) {
     // Move the specified distance in the given direction
-    return typeof direction + distance
-  }
-move('up', 10)
-move('left', 5)
-// move('down-left',20,)
+    if(direction === 'up' || direction === 'down' || direction === 'left' || direction === 'right'){
+        return direction + distance
+    } else {
+        throw new Error('error')
+    }
+}
+
 
 export const somethingDangerous = () => {
     if (Math.random() > 0.5) {
@@ -59,7 +61,7 @@ export const somethingDangerous = () => {
   }
 
 
-  
+
   export const parseValue = (value: unknown) => {
     if (typeof value === 'object' &&
         value !== null &&

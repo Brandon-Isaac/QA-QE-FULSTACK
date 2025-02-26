@@ -42,11 +42,11 @@ test('move throws error for invalid direction', () => {
 test('passes the test even with the error', () => {
     expect(() => handleResponse({
         error: 'Invalid argument',
-    })).not.toThrowError();
+    })).toThrow('Invalid argument');
     // but the data is returned, instead of an error.
-    expect(handleResponse({
+    expect(() => handleResponse({
         error: 'Invalid argument',
-    })).toEqual("Should this be 'Error'?");
+    })).toThrow('Invalid argument');
 });
 it('Should handle a { data: { id: string } }', () => {
     const result = parseValue({
