@@ -98,8 +98,7 @@ function applyFilters() {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
         let books = yield fetchBooks();
-        const genreFilter = document.getElementById("genreFilter");
-        const selectedGenre = genreFilter.value.toLowerCase();
+        const selectedGenre = document.getElementById("genreFilter").value.toLowerCase();
         const sortBy = (_a = document.getElementById("sortBy")) === null || _a === void 0 ? void 0 : _a.value;
         const searchQuery = document.getElementById("searchInput").value.toLowerCase();
         books = books.filter((book) => (selectedGenre === "" || book.genre.toLowerCase() === selectedGenre) &&
