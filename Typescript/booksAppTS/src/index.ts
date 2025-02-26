@@ -91,16 +91,16 @@ function showBookDetails(book:Book) {
 // Populate genre filter dynamically
 async function populateFilters() {
   const books = await fetchBooks();
-  const genres = new Set();
+  const genres = new Set<string>();
 
   books.forEach((book:Book) => genres.add(book.genre));
 
-  const genreFilter = document.getElementById("genreFilter") as HTMLElement;
+  const genreFilter = document.getElementById("genreFilter") as HTMLSelectElement;
   genreFilter .innerHTML = '<option value="">All</option>' ;
   genres.forEach((genre) => {
     const option = document.createElement("option") as HTMLOptionElement;
-    option.value = genre as string;
-    option.textContent = genre as string;
+    option.value = genre;
+    option.textContent = genre;
     genreFilter.appendChild(option);
   });
 }
@@ -108,8 +108,7 @@ async function populateFilters() {
 // Apply filters
 async function applyFilters() {
   let books = await fetchBooks();
-  const genreFilter=document.getElementById("genreFilter") as HTMLSelectElement
-  const selectedGenre = genreFilter.value.toLowerCase();
+  const selectedGenre =(document.getElementById("genreFilter") as HTMLSelectElement).value.toLowerCase();
   const sortBy = (document.getElementById("sortBy") as HTMLSelectElement)?.value;
   const searchQuery = (document.getElementById("searchInput")as HTMLInputElement).value.toLowerCase();
 
@@ -200,7 +199,6 @@ function updateCartDetails() {
           updateCartDetails();
         }
       });
-
     cartItem
       .querySelector(".remove-from-cart")?.addEventListener("click", () => {
         removeFromCart(item.book.id);

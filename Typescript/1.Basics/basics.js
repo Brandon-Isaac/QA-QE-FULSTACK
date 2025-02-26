@@ -1,11 +1,12 @@
-var getRectangleArea = function (rectangle) {
+"use strict";
+const getRectangleArea = (rectangle) => {
     return rectangle.width * rectangle.height;
 };
-var getRectanglePerimeter = function (rectangle) {
+const getRectanglePerimeter = (rectangle) => {
     return 2 * (rectangle.height + rectangle.width);
 };
-var rectangle = {
-    width: 20,
+let rectangle = {
+    width: 40,
     height: 30
 };
-console.log(getRectangleArea(rectangle));
+console.log(getRectanglePerimeter(rectangle));
