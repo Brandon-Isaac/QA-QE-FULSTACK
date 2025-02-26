@@ -33,8 +33,10 @@ try {
 }
 catch (error) {
     if (error instanceof Error) {
-        console.error(error.message);
+        console.log(error.message);
     }
+    else
+        throw error;
 }
 export const parseValue = (value) => {
     if (typeof value === 'object' &&

@@ -51,15 +51,15 @@ export const somethingDangerous = () => {
   
     return 'all good'
   }
-  
+
+
   try {
     somethingDangerous()
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message)
-    }
+      console.log(error.message)
+    }else throw error
   }
-
 
 
   export const parseValue = (value: unknown) => {
