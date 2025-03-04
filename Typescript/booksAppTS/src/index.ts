@@ -1,48 +1,48 @@
 let genreFilterChanged = false;
 let cartCount = 0;
 type CartItem = {
-    book: Book;
-    quantity: number;
+  book: Book;
+  quantity: number;
 };
 
 let cart: CartItem[] = [];
 
 async function fetchBooks(): Promise<Book[]> {
-    try {
-        const response = await fetch(`http://localhost:3000/Books`);
-        return await response.json();
-    } catch (error) {
-        console.error(error);
-        return [];
-    }
+  try {
+    const response = await fetch(`http://localhost:3000/Books`);
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 type Book = {
-    id: number;
-    title: string;
-    author: string;
-    genre: string;
-    year: number;
-    pages: number;
-    publisher: string;
-    description: string;
-    image: string;
-    price: number;
+  id: number;
+  title: string;
+  author: string;
+  genre: string;
+  year: number;
+  pages: number;
+  publisher: string;
+  description: string;
+  image: string;
+  price: number;
 };
 
 type Books = Book[];
 
 // Display books
 async function displayBooks(books: Books) {
-    const booksList = document.getElementById("booksList");
-    if (!booksList) return;
-    booksList.innerHTML = "";
+  const booksList = document.getElementById("booksList");
+  if (!booksList) return;
+  booksList.innerHTML = "";
 
-    books.forEach((book: Book) => {
-        const bookItem = document.createElement("li");
+  books.forEach((book: Book) => {
+    const bookItem = document.createElement("li");
 
-        bookItem.title = `${book.price}$  ${book.description}`;
-        bookItem.innerHTML = `
+    bookItem.title = `${book.price}$  ${book.description}`;
+    bookItem.innerHTML = `
                 <img src="${book.image}" alt="${book.title}"> 
                 <div>
                     <strong>${book.title}</strong> by ${book.author} <br> 
@@ -50,18 +50,18 @@ async function displayBooks(books: Books) {
                 </div>
                 <button class="buy-now"> Buy Now </button>
             `;
-        bookItem.classList.add("book");
-        booksList.appendChild(bookItem);
+    bookItem.classList.add("book");
+    booksList.appendChild(bookItem);
 
-        // Add event listener to the "Buy Now" button
-        bookItem.querySelector(".buy-now")?.addEventListener("click", () => {
-            showBookDetails(book);
-        });
+    // Add event listener to the "Buy Now" button
+    bookItem.querySelector(".buy-now")?.addEventListener("click", () => {
+      showBookDetails(book);
     });
+  });
 }
 
 // Show book details in a modal
-function showBookDetails(book:Book) {
+function showBookDetails(book: Book) {
   const modal = document.getElementById("bookModal") as HTMLElement;
   const modalContent = modal.querySelector(".modal-content") as HTMLElement;
 
@@ -78,7 +78,10 @@ function showBookDetails(book:Book) {
   modal.style.display = "block";
 
   modal.querySelector("#addToCart")?.addEventListener("click", () => {
-    const quantity = parseInt((modal.querySelector("#quantity") as HTMLInputElement)?.value, 10);
+    const quantity = parseInt(
+      (modal.querySelector("#quantity") as HTMLInputElement)?.value,
+      10
+    );
     addToCart(book, quantity);
     modal.style.display = "none";
   });
@@ -93,10 +96,12 @@ async function populateFilters() {
   const books = await fetchBooks();
   const genres = new Set<string>();
 
-  books.forEach((book:Book) => genres.add(book.genre));
+  books.forEach((book: Book) => genres.add(book.genre));
 
-  const genreFilter = document.getElementById("genreFilter") as HTMLSelectElement;
-  genreFilter .innerHTML = '<option value="">All</option>' ;
+  const genreFilter = document.getElementById(
+    "genreFilter"
+  ) as HTMLSelectElement;
+  genreFilter.innerHTML = '<option value="">All</option>';
   genres.forEach((genre) => {
     const option = document.createElement("option") as HTMLOptionElement;
     option.value = genre;
@@ -108,12 +113,17 @@ async function populateFilters() {
 // Apply filters
 async function applyFilters() {
   let books = await fetchBooks();
-  const selectedGenre =(document.getElementById("genreFilter") as HTMLSelectElement).value.toLowerCase();
-  const sortBy = (document.getElementById("sortBy") as HTMLSelectElement)?.value;
-  const searchQuery = (document.getElementById("searchInput")as HTMLInputElement).value.toLowerCase();
+  const selectedGenre = (
+    document.getElementById("genreFilter") as HTMLSelectElement
+  ).value.toLowerCase();
+  const sortBy = (document.getElementById("sortBy") as HTMLSelectElement)
+    ?.value;
+  const searchQuery = (
+    document.getElementById("searchInput") as HTMLInputElement
+  ).value.toLowerCase();
 
   books = books.filter(
-    (book:Book) =>
+    (book: Book) =>
       (selectedGenre === "" || book.genre.toLowerCase() === selectedGenre) &&
       (searchQuery === "" || book.title.toLowerCase().includes(searchQuery))
   );
@@ -129,16 +139,16 @@ async function applyFilters() {
 }
 
 // Adding items to cart
-function addToCart(book:Book, quantity:number) {
+function addToCart(book: Book, quantity: number) {
   const existingBook = cart.find((item) => item.book.id === book.id);
   if (existingBook) {
     existingBook.quantity += quantity;
   } else {
     cart.push({ book, quantity });
   }
-function updateCartCount() {
-  cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-}
+  function updateCartCount() {
+    cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  }
   updateCartCount();
   updateCartCountDisplay();
   updateCartDetails();
@@ -149,7 +159,7 @@ function updateCartCount() {
 
 // Update cart count display
 function updateCartCountDisplay() {
-  const cartCountElement = document.getElementById("cartItems")as HTMLElement;
+  const cartCountElement = document.getElementById("cartItems") as HTMLElement;
   cartCountElement.textContent = `Cart: ${cartCount} items`;
 }
 
@@ -181,26 +191,32 @@ function updateCartDetails() {
 
     totalCost += item.book.price * item.quantity;
 
-    cartItem.querySelector(".increaseQuantity")?.addEventListener("click", () => {
+    cartItem
+      .querySelector(".increaseQuantity")
+      ?.addEventListener("click", () => {
         item.quantity += 1;
-        (cartItem.querySelector(".quantity") as HTMLElement).textContent = item.quantity.toString();
+        (cartItem.querySelector(".quantity") as HTMLElement).textContent =
+          item.quantity.toString();
         updateCartCount();
         updateCartCountDisplay();
         updateCartDetails();
       });
 
     cartItem
-      .querySelector(".decreaseQuantity")?.addEventListener("click", () => {
+      .querySelector(".decreaseQuantity")
+      ?.addEventListener("click", () => {
         if (item.quantity > 1) {
           --item.quantity;
-          (cartItem.querySelector(".quantity")as HTMLElement).textContent = item.quantity.toString();
+          (cartItem.querySelector(".quantity") as HTMLElement).textContent =
+            item.quantity.toString();
           updateCartCount();
           updateCartCountDisplay();
           updateCartDetails();
         }
       });
     cartItem
-      .querySelector(".remove-from-cart")?.addEventListener("click", () => {
+      .querySelector(".remove-from-cart")
+      ?.addEventListener("click", () => {
         removeFromCart(item.book.id);
         updateCartDetails();
       });
@@ -220,7 +236,7 @@ function showCart() {
 }
 
 // Remove item from cart
-function removeFromCart(bookId:number) {
+function removeFromCart(bookId: number) {
   const itemIndex = cart.findIndex((item) => item.book.id === bookId);
   if (itemIndex > -1) {
     cartCount -= cart[itemIndex].quantity;
