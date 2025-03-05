@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Library</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Book Management Library</h1>
+
+      <div class="filters">
+        <div class="genreFilter">
+          <label for="genreFilter">Filter by Genre:</label>
+          <select id="genreFilter">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div class="sortBy">
+          <label for="sortBy">Sort By:</label>
+          <select id="sortBy">
+            <option value="year">Year</option>
+            <option value="pages">Pages</option>
+          </select>
+        </div>
+
+        <input type="text" id="searchInput" placeholder="Search by title..." />
+        <div class="cart">
+          <img onclick="{showCart()}" src="./Images/cart.png" alt="cart" />
+          <span id="cartItems"></span>
+        </div>
+        <div id="bookModal" class="modal">
+          <div class="modal-content"></div>
+        </div>
+      </div>
+
+      <ul id="booksList"></ul>
+    </div>
+    <div id="carts">
+      <span class="close">&times;</span>
+      <div id="cartDetails"></div>
+    </div>
+
+    <script src="dist/index.js"></script>
+  </body>
+</html>
