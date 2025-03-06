@@ -27,24 +27,22 @@
 
         <input type="text" id="searchInput" placeholder="Search by title..." />
         <div class="cart">
-          <img onclick="{showCart()}" src="./Images/cart.png" alt="cart" />
+          <img onclick="showCartModal()" src="./Images/cart.png" alt="cart" />
           <span id="cartItems"></span>
-        </div>
-        <div id="bookModal" class="modal">
-          <div class="modal-content"></div>
         </div>
       </div>
 
-      <ul id="booksList"></ul>
-    </div>
-    <div id="carts">
-      <span class="close">&times;</span>
-      <div id="cartDetails"></div>
+      <ul id="bookList"></ul>
     </div>
 
-    <script src="dist/index.js"></script>
-    <script>
-      var exports = {};
-    </script>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modalMessage"></div>
+        <div id="modalDetails"></div>
+      </div>
+    </div>
+
+    <script src="./dist/index.js"></script>
   </body>
 </html>
