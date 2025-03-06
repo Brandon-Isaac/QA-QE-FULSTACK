@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as path from "path";
+
 export interface Book {
   id: number;
   title: string;
@@ -7,32 +10,8 @@ export interface Book {
   pages: number;
 }
 
-const books: Book[] = [
-  {
-    id: 1,
-    title: "1984",
-    author: "George Orwell",
-    genre: "Dystopian",
-    year: 1949,
-    pages: 328,
-  },
-  {
-    id: 2,
-    title: "The Hobbit",
-    author: "J.R.R. Tolkien",
-    genre: "Fantasy",
-    year: 1937,
-    pages: 310,
-  },
-  {
-    id: 3,
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    genre: "Romance",
-    year: 1813,
-    pages: 432,
-  },
-];
+const booksFilePath = path.join(__dirname, ".src/db/books.json");
+const books: Book[] = JSON.parse(fs.readFileSync(booksFilePath, "utf-8"));
 
 export const getBooks = (query: any): Book[] => {
   let filteredBooks = books;
