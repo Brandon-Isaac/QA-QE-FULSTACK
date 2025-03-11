@@ -1,5 +1,5 @@
 let genreFilterChanged = false;
-let cartCount = 0;
+let cartCount: number = 0;
 type CartItem = {
   book: Book;
   quantity: number;
@@ -12,7 +12,7 @@ async function fetchBooks(): Promise<Book[]> {
     const response = await fetch(`http://localhost:3000/Books`);
     return await response.json();
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching books", error);
     return [];
   }
 }
@@ -37,6 +37,12 @@ async function displayBooks(books: Books) {
   const booksList = document.getElementById("booksList");
   if (!booksList) return;
   booksList.innerHTML = "";
+
+  if (books.length === 0) {
+    booksList.innerHTML =
+      "<p>No books found matching your search criteria.</p>";
+    return;
+  }
 
   books.forEach((book: Book) => {
     const bookItem = document.createElement("li");

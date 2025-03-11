@@ -1,14 +1,15 @@
 {
-  "name": "booksappts",
+  "name": "frontend",
   "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",
     "serve": "vite",
+    "start:dev": "nodemon src/events.ts",
     "build": "tsc",
     "preview": "vite preview",
-    "test": "vitest",
-    "start": "nodemon dist/index.js"
+    "test": "vitest"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
