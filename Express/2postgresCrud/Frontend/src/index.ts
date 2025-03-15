@@ -60,7 +60,26 @@ async function displayBooks(books: Book[]): Promise<void> {
       return "Images/book.png";
     }
   }
-
+  // Create the edit modal
+  const editModal = document.createElement("div");
+  editModal.id = "editModal";
+  editModal.innerHTML = `
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Edit Book</h2>
+        <form id="editBookForm">
+            <input type="hidden" id="editBookId">
+            <label>Title:</label>
+            <input type="text" id="editTitle">
+            <label>Author:</label>
+            <input type="text" id="editAuthor">
+            <label>Price:</label>
+            <input type="number" id="editPrice">
+            <button type="submit">Update</button>
+        </form>
+    </div>
+`;
+  document.body.appendChild(editModal);
   for (const book of books) {
     const bookItem = document.createElement("li");
     bookItem.classList.add("book");
@@ -76,13 +95,87 @@ async function displayBooks(books: Book[]): Promise<void> {
         Price: <strong>$${book.price}</strong>
       </div>
       <button class="addToCart" data-title="${book.title}">Add to Cart</button>
+      <div class="book-actions">
+            <span class="edit-icon" title="Edit">✏</span>
+            <span class="delete-icon" title="Delete">❌</span>
+        </div>
     `;
     bookList.appendChild(bookItem);
 
     bookItem.querySelector(".addToCart")?.addEventListener("click", () => {
       addToCart(book.title, book.author, book.price);
     });
+    // Handle Delete with Confirmation
+    bookItem.querySelector(".delete-icon")?.addEventListener("click", () => {
+      if (confirm(`Are you sure you want to delete "${book.title}"?`)) {
+        deleteBook(book.id, bookItem);
+      }
+    });
+
+    // Handle Edit (opens modal)
+    bookItem.querySelector(".edit-icon")?.addEventListener("click", () => {
+      openEditModal(book);
+    });
   }
+  // Function to Delete a Book
+  function deleteBook(bookId: number, bookElement: HTMLElement) {
+    fetch(`http://localhost:3000/books/${bookId}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to delete book");
+        bookElement.remove(); // Remove from UI
+      })
+      .catch((error) => console.error("Error deleting book:", error));
+  }
+
+  // Function to Open Edit Modal
+  function openEditModal(book: any) {
+    (document.getElementById("editBookId") as HTMLInputElement).value = book.id;
+    (document.getElementById("editTitle") as HTMLInputElement).value =
+      book.title;
+    (document.getElementById("editAuthor") as HTMLInputElement).value =
+      book.author;
+    (document.getElementById("editPrice") as HTMLInputElement).value =
+      book.price;
+
+    editModal.style.display = "block";
+  }
+
+  // Close Edit Modal
+  document.querySelector(".close-modal")?.addEventListener("click", () => {
+    editModal.style.display = "none";
+  });
+
+  // Handle Edit Form Submission
+  document
+    .getElementById("editBookForm")
+    ?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const bookId = (document.getElementById("editBookId") as HTMLInputElement)
+        .value;
+      const updatedBook = {
+        title: (document.getElementById("editTitle") as HTMLInputElement).value,
+        author: (document.getElementById("editAuthor") as HTMLInputElement)
+          .value,
+        price: parseFloat(
+          (document.getElementById("editPrice") as HTMLInputElement).value
+        ),
+      };
+
+      fetch(`http://localhost:3000/books/${bookId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedBook),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          alert("Book updated successfully!");
+          editModal.style.display = "none";
+          location.reload(); // Refresh page to show updated book
+        })
+        .catch((error) => console.error("Error updating book:", error));
+    });
 }
 
 // Add a book to the cart
@@ -293,153 +386,7 @@ function setupEventListeners(): void {
         console.error("Error:", error);
       }
     });
-
-  const updateBookBtn = document.getElementById(
-    "updateBook"
-  ) as HTMLButtonElement;
-  updateBookBtn?.addEventListener("click", () => {
-    const bookItems = document.querySelectorAll(".book");
-
-    bookItems.forEach((bookItem) => {
-      const deleteIcon = document.createElement("span");
-      deleteIcon.innerHTML = "🗑️";
-      deleteIcon.classList.add("delete-icon");
-      deleteIcon.addEventListener("click", async () => {
-        try {
-          const bookId = bookItem.getAttribute("data-id");
-          if (!bookId) throw new Error("Book ID not found");
-
-          const response = await fetch(
-            `http://localhost:3000/books/${bookId}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          if (!response.ok) throw new Error("Failed to delete book");
-
-          console.log("Book deleted:", bookItem);
-          bookItem.remove();
-        } catch (error) {
-          console.error("Error deleting book:", error);
-        }
-      });
-
-      const editIcon = document.createElement("span");
-      editIcon.innerHTML = "✏️";
-      editIcon.classList.add("edit-icon");
-      editIcon.addEventListener("click", async () => {
-        const bookId = bookItem.getAttribute("data-id");
-        if (!bookId) {
-          console.error("Book ID not found");
-          return;
-        }
-
-        try {
-          const response = await fetch(`http://localhost:3000/books/${bookId}`);
-          if (!response.ok) throw new Error("Failed to fetch book details");
-
-          const book = await response.json();
-
-          // Populate the form with book details
-          (document.getElementById("id") as HTMLInputElement).value = book.id;
-          (document.getElementById("title") as HTMLInputElement).value =
-            book.title;
-          (document.getElementById("author") as HTMLInputElement).value =
-            book.author;
-          (document.getElementById("year") as HTMLInputElement).value =
-            book.year;
-          (document.getElementById("genre") as HTMLInputElement).value =
-            book.genre;
-          (document.getElementById("pages") as HTMLInputElement).value =
-            book.pages;
-          (document.getElementById("publisher") as HTMLInputElement).value =
-            book.publisher;
-          (document.getElementById("description") as HTMLInputElement).value =
-            book.description;
-          (document.getElementById("image") as HTMLInputElement).value =
-            book.image;
-          (document.getElementById("price") as HTMLInputElement).value =
-            book.price;
-
-          // Show the modal
-          bookModal.style.display = "flex";
-
-          // Handle form submission for updating the book
-          document
-            .getElementById("bookForm")
-            ?.addEventListener("submit", async (event) => {
-              event.preventDefault();
-
-              const updatedBook = {
-                id: parseInt(
-                  (document.getElementById("id") as HTMLInputElement).value,
-                  10
-                ),
-                title: (document.getElementById("title") as HTMLInputElement)
-                  .value,
-                author: (document.getElementById("author") as HTMLInputElement)
-                  .value,
-                year: parseInt(
-                  (document.getElementById("year") as HTMLInputElement).value,
-                  10
-                ),
-                genre: (document.getElementById("genre") as HTMLInputElement)
-                  .value,
-                pages: parseInt(
-                  (document.getElementById("pages") as HTMLInputElement).value,
-                  10
-                ),
-                publisher: (
-                  document.getElementById("publisher") as HTMLInputElement
-                ).value,
-                description: (
-                  document.getElementById("description") as HTMLInputElement
-                ).value,
-                image: (document.getElementById("image") as HTMLInputElement)
-                  .value,
-                price: parseInt(
-                  (document.getElementById("price") as HTMLInputElement).value,
-                  10
-                ),
-              };
-
-              try {
-                const response = await fetch(
-                  `http://localhost:3000/books/${bookId}`,
-                  {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(updatedBook),
-                  }
-                );
-
-                if (!response.ok) throw new Error("Failed to update book");
-
-                const updatedBookResponse = await response.json();
-                console.log("Book updated:", updatedBookResponse);
-
-                // Refresh books list
-                const books = await fetchBooks();
-                displayBooks(books);
-
-                // Close modal
-                bookModal.style.display = "none";
-              } catch (error) {
-                console.error("Error updating book:", error);
-              }
-            });
-        } catch (error) {
-          console.error("Error fetching book details:", error);
-        }
-      });
-
-      bookItem.querySelector("img")?.parentElement?.appendChild(deleteIcon);
-      bookItem.querySelector("img")?.parentElement?.appendChild(editIcon);
-    });
-  });
 }
-
 // Initialize the app
 async function init(): Promise<void> {
   const books = await fetchBooks();

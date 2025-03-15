@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bookRoutes from "./routes/bookRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
+import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/books", bookRoutes);
+app.use("/users", userRoutes);
+app.use("/auth", authRoutes);
 
 // Middleware
 app.use(errorHandler);

@@ -29,7 +29,7 @@ function fetchBooks() {
 // Display books in the UI
 function displayBooks(books) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a;
+        var _a, _b, _c, _d, _e;
         const bookList = document.getElementById("bookList");
         if (!bookList)
             return;
@@ -54,6 +54,26 @@ function displayBooks(books) {
                 }
             });
         }
+        // Create the edit modal
+        const editModal = document.createElement("div");
+        editModal.id = "editModal";
+        editModal.innerHTML = `
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Edit Book</h2>
+        <form id="editBookForm">
+            <input type="hidden" id="editBookId">
+            <label>Title:</label>
+            <input type="text" id="editTitle">
+            <label>Author:</label>
+            <input type="text" id="editAuthor">
+            <label>Price:</label>
+            <input type="number" id="editPrice">
+            <button type="submit">Update</button>
+        </form>
+    </div>
+`;
+        document.body.appendChild(editModal);
         for (const book of books) {
             const bookItem = document.createElement("li");
             bookItem.classList.add("book");
@@ -67,12 +87,78 @@ function displayBooks(books) {
         Price: <strong>$${book.price}</strong>
       </div>
       <button class="addToCart" data-title="${book.title}">Add to Cart</button>
+      <div class="book-actions">
+            <span class="edit-icon" title="Edit">✏</span>
+            <span class="delete-icon" title="Delete">❌</span>
+        </div>
     `;
             bookList.appendChild(bookItem);
             (_a = bookItem.querySelector(".addToCart")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => {
                 addToCart(book.title, book.author, book.price);
             });
+            // Handle Delete with Confirmation
+            (_b = bookItem.querySelector(".delete-icon")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
+                if (confirm(`Are you sure you want to delete "${book.title}"?`)) {
+                    deleteBook(book.id, bookItem);
+                }
+            });
+            // Handle Edit (opens modal)
+            (_c = bookItem.querySelector(".edit-icon")) === null || _c === void 0 ? void 0 : _c.addEventListener("click", () => {
+                openEditModal(book);
+            });
         }
+        // Function to Delete a Book
+        function deleteBook(bookId, bookElement) {
+            fetch(`http://localhost:3000/books/${bookId}`, {
+                method: "DELETE",
+            })
+                .then((response) => {
+                if (!response.ok)
+                    throw new Error("Failed to delete book");
+                bookElement.remove(); // Remove from UI
+            })
+                .catch((error) => console.error("Error deleting book:", error));
+        }
+        // Function to Open Edit Modal
+        function openEditModal(book) {
+            document.getElementById("editBookId").value = book.id;
+            document.getElementById("editTitle").value =
+                book.title;
+            document.getElementById("editAuthor").value =
+                book.author;
+            document.getElementById("editPrice").value =
+                book.price;
+            editModal.style.display = "block";
+        }
+        // Close Edit Modal
+        (_d = document.querySelector(".close-modal")) === null || _d === void 0 ? void 0 : _d.addEventListener("click", () => {
+            editModal.style.display = "none";
+        });
+        // Handle Edit Form Submission
+        (_e = document
+            .getElementById("editBookForm")) === null || _e === void 0 ? void 0 : _e.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const bookId = document.getElementById("editBookId")
+                .value;
+            const updatedBook = {
+                title: document.getElementById("editTitle").value,
+                author: document.getElementById("editAuthor")
+                    .value,
+                price: parseFloat(document.getElementById("editPrice").value),
+            };
+            fetch(`http://localhost:3000/books/${bookId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedBook),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                alert("Book updated successfully!");
+                editModal.style.display = "none";
+                location.reload(); // Refresh page to show updated book
+            })
+                .catch((error) => console.error("Error updating book:", error));
+        });
     });
 }
 // Add a book to the cart
@@ -238,117 +324,6 @@ function setupEventListeners() {
             console.error("Error:", error);
         }
     }));
-    const updateBookBtn = document.getElementById("updateBook");
-    updateBookBtn === null || updateBookBtn === void 0 ? void 0 : updateBookBtn.addEventListener("click", () => {
-        const bookItems = document.querySelectorAll(".book");
-        bookItems.forEach((bookItem) => {
-            var _a, _b, _c, _d;
-            const deleteIcon = document.createElement("span");
-            deleteIcon.innerHTML = "🗑️";
-            deleteIcon.classList.add("delete-icon");
-            deleteIcon.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const bookId = bookItem.getAttribute("data-id");
-                    if (!bookId)
-                        throw new Error("Book ID not found");
-                    const response = yield fetch(`http://localhost:3000/books/${bookId}`, {
-                        method: "DELETE",
-                    });
-                    if (!response.ok)
-                        throw new Error("Failed to delete book");
-                    console.log("Book deleted:", bookItem);
-                    bookItem.remove();
-                }
-                catch (error) {
-                    console.error("Error deleting book:", error);
-                }
-            }));
-            const editIcon = document.createElement("span");
-            editIcon.innerHTML = "✏️";
-            editIcon.classList.add("edit-icon");
-            editIcon.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                const bookId = bookItem.getAttribute("data-id");
-                if (!bookId) {
-                    console.error("Book ID not found");
-                    return;
-                }
-                try {
-                    const response = yield fetch(`http://localhost:3000/books/${bookId}`);
-                    if (!response.ok)
-                        throw new Error("Failed to fetch book details");
-                    const book = yield response.json();
-                    // Populate the form with book details
-                    document.getElementById("id").value = book.id;
-                    document.getElementById("title").value =
-                        book.title;
-                    document.getElementById("author").value =
-                        book.author;
-                    document.getElementById("year").value =
-                        book.year;
-                    document.getElementById("genre").value =
-                        book.genre;
-                    document.getElementById("pages").value =
-                        book.pages;
-                    document.getElementById("publisher").value =
-                        book.publisher;
-                    document.getElementById("description").value =
-                        book.description;
-                    document.getElementById("image").value =
-                        book.image;
-                    document.getElementById("price").value =
-                        book.price;
-                    // Show the modal
-                    bookModal.style.display = "flex";
-                    // Handle form submission for updating the book
-                    (_a = document
-                        .getElementById("bookForm")) === null || _a === void 0 ? void 0 : _a.addEventListener("submit", (event) => __awaiter(this, void 0, void 0, function* () {
-                        event.preventDefault();
-                        const updatedBook = {
-                            id: parseInt(document.getElementById("id").value, 10),
-                            title: document.getElementById("title")
-                                .value,
-                            author: document.getElementById("author")
-                                .value,
-                            year: parseInt(document.getElementById("year").value, 10),
-                            genre: document.getElementById("genre")
-                                .value,
-                            pages: parseInt(document.getElementById("pages").value, 10),
-                            publisher: document.getElementById("publisher").value,
-                            description: document.getElementById("description").value,
-                            image: document.getElementById("image")
-                                .value,
-                            price: parseInt(document.getElementById("price").value, 10),
-                        };
-                        try {
-                            const response = yield fetch(`http://localhost:3000/books/${bookId}`, {
-                                method: "PATCH",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(updatedBook),
-                            });
-                            if (!response.ok)
-                                throw new Error("Failed to update book");
-                            const updatedBookResponse = yield response.json();
-                            console.log("Book updated:", updatedBookResponse);
-                            // Refresh books list
-                            const books = yield fetchBooks();
-                            displayBooks(books);
-                            // Close modal
-                            bookModal.style.display = "none";
-                        }
-                        catch (error) {
-                            console.error("Error updating book:", error);
-                        }
-                    }));
-                }
-                catch (error) {
-                    console.error("Error fetching book details:", error);
-                }
-            }));
-            (_b = (_a = bookItem.querySelector("img")) === null || _a === void 0 ? void 0 : _a.parentElement) === null || _b === void 0 ? void 0 : _b.appendChild(deleteIcon);
-            (_d = (_c = bookItem.querySelector("img")) === null || _c === void 0 ? void 0 : _c.parentElement) === null || _d === void 0 ? void 0 : _d.appendChild(editIcon);
-        });
-    });
 }
 // Initialize the app
 function init() {
