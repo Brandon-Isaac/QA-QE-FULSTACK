@@ -82,31 +82,34 @@ export const getBookById = asyncHandler(async (req: Request, res: Response) => {
 
 export const createBook = asyncHandler(
   async (req: UserRequest, res: Response) => {
+    const {
+      title,
+      author,
+      genre,
+      year,
+      pages,
+      publisher,
+      description,
+      available_copies,
+      total_copies,
+      image,
+      price,
+    } = req.body as unknown as Book;
     try {
       if (!req.user) {
         res.status(401).json({ message: "Not authorized" });
         return;
       }
-      const {
-        title,
-        author,
-        genre,
-        year,
-        pages,
-        publisher,
-        description,
-        image,
-        price,
-      } = req.body as unknown as Book;
-      if (req.user.role_id !== "1" && req.user.role_id !== "2") {
+
+      if (req.user.role_id !== 1 && req.user.role_id !== 2) {
         res.status(403).json({
           message: "Access denied: Only Librarians or Admins can create books",
         });
         return;
       }
       await pool.query(
-        `INSERT INTO public.books (title, author, genre, year, pages, publisher, description, image, price) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO public.books (title, author, genre, year, pages, publisher, description, available_copies,total_copies,image, price) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10,$11)`,
         [
           title,
           author,
@@ -115,6 +118,8 @@ export const createBook = asyncHandler(
           pages,
           publisher,
           description,
+          available_copies,
+          total_copies,
           image,
           price,
         ]
@@ -129,10 +134,6 @@ export const createBook = asyncHandler(
 export const updateBook = asyncHandler(
   async (req: UserRequest, res: Response) => {
     try {
-      if (!req.user) {
-        res.status(401).json({ message: "Not authorized" });
-        return;
-      }
       const { id } = (req as unknown as Request).params;
       const {
         title,
@@ -145,7 +146,11 @@ export const updateBook = asyncHandler(
         image,
         price,
       } = req.body as unknown as Book;
-      if (req.user.role_id !== "1" && req.user.role_id !== "2") {
+      if (!req.user) {
+        res.status(401).json({ message: "Not authorized" });
+        return;
+      }
+      if (req.user.role_id !== 1 && req.user.role_id !== 2) {
         res.status(403).json({
           message: "Access denied: Only Librarians or Admins can update books",
         });
@@ -182,7 +187,7 @@ export const partialUpdateBook = asyncHandler(
       }
       const { id } = (req as unknown as Request).params;
       const updates = req.body as Partial<Book>;
-      if (req.user.role_id !== "1" && req.user.role_id !== "2") {
+      if (req.user.role_id !== 1 && req.user.role_id !== 2) {
         res.status(403).json({
           message: "Access denied: Only Librarians or Admins can update books",
         });
@@ -220,7 +225,7 @@ export const deleteBook = asyncHandler(
         return;
       }
       const { id } = (req as unknown as Request).params;
-      if (req.user.role_id !== "1") {
+      if (req.user.role_id !== 1) {
         res.status(403).json({
           message: "Access denied:  Admins can delete books",
         });

@@ -1,8 +1,8 @@
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
-  role_id: string;
+  role_id: number;
 }
 
 export interface Book {
@@ -14,6 +14,8 @@ export interface Book {
   pages: number;
   publisher: string;
   description: string;
+  available_copies: number;
+  total_copies: string;
   image: string;
   price: number;
 }
@@ -40,6 +42,11 @@ export interface RoleRequest extends Request {
     updated_at?: Date;
   };
 }
+import { Request } from "express";
+
 export interface UserRequest extends Request {
   user?: User;
+  params: {
+    [key: string]: string;
+  };
 }

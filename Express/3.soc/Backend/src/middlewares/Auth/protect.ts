@@ -1,10 +1,12 @@
+import { setupAliases } from "import-aliases";
+setupAliases();
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import pool from "../../db/db.config";
+import pool from "@app/db/db.config";
 
 interface UserRequest extends Request {
   user?: {
-    id: string;
+    user_id: string;
     name: string;
     email: string;
     role_id: number;
@@ -48,10 +50,11 @@ export const protect = asyncHandler(
         userId: string;
         roleId: number;
       };
+      console.log("Decoded JWT", decoded);
 
       //get the user from database
       const userQuery = await pool.query(
-        "SELECT users.id, users.name, users.email, users.role_id, user_roles.role_name FROM users JOIN user_roles ON users.role_id = user_roles.role_id WHERE users.id = $1",
+        "SELECT users.user_id, users.name, users.email, users.role_id, user_role.role_name FROM users JOIN user_role ON users.role_id = user_role.role_id WHERE users.user_id = $1",
         [decoded.userId]
       );
 
@@ -70,3 +73,30 @@ export const protect = asyncHandler(
     }
   }
 );
+export const authenticateToken = (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  if (!process.env.JWT_SECRET) {
+    return res
+      .status(500)
+      .json({ message: "JWT_SECRET is not defined in environment variables" });
+  }
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.user = user as {
+      user_id: string;
+      name: string;
+      email: string;
+      role_id: number;
+      role_name: string;
+    };
+    next();
+  });
+};

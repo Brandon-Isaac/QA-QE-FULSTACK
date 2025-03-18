@@ -1,8 +1,4 @@
-// Global variables
-let cartCount: number = 0;
-let cart: CartItem[] = [];
-
-// Interfaces
+// Types and Interfaces
 interface Book {
   id: number;
   title: string;
@@ -17,141 +13,401 @@ interface Book {
 }
 
 interface CartItem {
+  id: number;
   title: string;
   author: string;
   price: number;
   quantity: number;
+  image: string;
 }
 
-// Fetch books from the backend
-async function fetchBooks(
-  params: Record<string, string> = {}
-): Promise<Book[]> {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "user" | "admin";
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+// API URL
+const API_URL = "http://localhost:3000";
+
+// Global state
+let books: Book[] = [];
+let cart: CartItem[] = [];
+let currentUser: User | null = null;
+let token: string | null = null;
+let isEditMode = false;
+let currentPage = 1;
+let totalPages = 1;
+let booksPerPage = 8;
+let currentFilters: Record<string, any> = {};
+
+// DOM Elements
+const domElements = {
+  bookList: document.getElementById("bookList") as HTMLDivElement,
+  searchInput: document.getElementById("searchInput") as HTMLInputElement,
+  searchBtn: document.getElementById("searchBtn") as HTMLButtonElement,
+  genreFilter: document.getElementById("genreFilter") as HTMLSelectElement,
+  sortBy: document.getElementById("sortBy") as HTMLSelectElement,
+  orderBy: document.getElementById("orderBy") as HTMLSelectElement,
+  minPrice: document.getElementById("minPrice") as HTMLInputElement,
+  maxPrice: document.getElementById("maxPrice") as HTMLInputElement,
+  applyFilters: document.getElementById("applyFilters") as HTMLButtonElement,
+  resetFilters: document.getElementById("resetFilters") as HTMLButtonElement,
+  cartItems: document.getElementById("cartItems") as HTMLSpanElement,
+  cartBtn: document.getElementById("cartBtn") as HTMLButtonElement,
+  cartModal: document.getElementById("cartModal") as HTMLDivElement,
+  cartDetails: document.getElementById("cartDetails") as HTMLDivElement,
+  cartTotal: document.getElementById("cartTotal") as HTMLParagraphElement,
+  clearCartBtn: document.getElementById("clearCartBtn") as HTMLButtonElement,
+  checkoutBtn: document.getElementById("checkoutBtn") as HTMLButtonElement,
+  bookModal: document.getElementById("bookModal") as HTMLDivElement,
+  bookForm: document.getElementById("bookForm") as HTMLFormElement,
+  bookId: document.getElementById("bookId") as HTMLInputElement,
+  bookModalTitle: document.getElementById(
+    "bookModalTitle"
+  ) as HTMLHeadingElement,
+  addBookBtn: document.getElementById("addBookBtn") as HTMLButtonElement,
+  manageBooks: document.getElementById("manageBooks") as HTMLButtonElement,
+  adminControls: document.getElementById("adminControls") as HTMLDivElement,
+  loginBtn: document.getElementById("loginBtn") as HTMLButtonElement,
+  signupBtn: document.getElementById("signupBtn") as HTMLButtonElement,
+  authButtons: document.getElementById("authButtons") as HTMLDivElement,
+  loginModal: document.getElementById("loginModal") as HTMLDivElement,
+  signupModal: document.getElementById("signupModal") as HTMLDivElement,
+  profileModal: document.getElementById("profileModal") as HTMLDivElement,
+  loginForm: document.getElementById("loginForm") as HTMLFormElement,
+  signupForm: document.getElementById("signupForm") as HTMLFormElement,
+  switchToLogin: document.getElementById("switchToLogin") as HTMLAnchorElement,
+  switchToSignup: document.getElementById(
+    "switchToSignup"
+  ) as HTMLAnchorElement,
+  userSection: document.getElementById("userSection") as HTMLDivElement,
+  profileName: document.getElementById("profileName") as HTMLHeadingElement,
+  profileEmail: document.getElementById("profileEmail") as HTMLParagraphElement,
+  userRole: document.getElementById("userRole") as HTMLSpanElement,
+  bookDetailsModal: document.getElementById(
+    "bookDetailsModal"
+  ) as HTMLDivElement,
+  bookDetailsContent: document.getElementById(
+    "bookDetailsContent"
+  ) as HTMLDivElement,
+  loadingIndicator: document.getElementById(
+    "loadingIndicator"
+  ) as HTMLDivElement,
+  noResults: document.getElementById("noResults") as HTMLDivElement,
+  pagination: document.getElementById("pagination") as HTMLDivElement,
+  clearFiltersBtn: document.getElementById(
+    "clearFiltersBtn"
+  ) as HTMLButtonElement,
+  loginError: document.getElementById("loginError") as HTMLDivElement,
+  signupError: document.getElementById("signupError") as HTMLDivElement,
+  toastContainer: document.getElementById("toastContainer") as HTMLDivElement,
+};
+
+// Auth functions
+async function checkAuth(): Promise<void> {
+  // Check if token exists in local storage
+  token = localStorage.getItem("token");
+  if (!token) return;
+
   try {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `http://localhost:3000/books?${queryParams}`;
+    const response = await fetch(`${API_URL}/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Authentication failed");
+    }
+
+    const user = await response.json();
+    currentUser = user;
+    updateUIForLoggedInUser();
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    logout();
+  }
+}
+
+async function login(email: string, password: string): Promise<boolean> {
+  try {
+    domElements.loginError.textContent = "";
+
+    const response = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Login failed");
+    }
+
+    const authData: AuthResponse = await response.json();
+    token = authData.token;
+    currentUser = authData.user;
+
+    // Save token to local storage
+    localStorage.setItem("token", token);
+
+    updateUIForLoggedInUser();
+    closeLoginModal();
+    return true;
+  } catch (error) {
+    console.error("Login failed:", error);
+    domElements.loginError.textContent =
+      error instanceof Error ? error.message : "Login failed";
+    return false;
+  }
+}
+
+async function signup(
+  name: string,
+  email: string,
+  password: string
+): Promise<boolean> {
+  try {
+    domElements.signupError.textContent = "";
+
+    const response = await fetch(`${API_URL}/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Signup failed");
+    }
+
+    const authData: AuthResponse = await response.json();
+    token = authData.token;
+    currentUser = authData.user;
+
+    // Save token to local storage
+    localStorage.setItem("token", token);
+
+    updateUIForLoggedInUser();
+    closeSignupModal();
+    return true;
+  } catch (error) {
+    console.error("Signup failed:", error);
+    domElements.signupError.textContent =
+      error instanceof Error ? error.message : "Signup failed";
+    return false;
+  }
+}
+
+function logout(): void {
+  currentUser = null;
+  token = null;
+  localStorage.removeItem("token");
+  updateUIForLoggedOutUser();
+}
+
+function updateUIForLoggedInUser(): void {
+  if (!currentUser) return;
+
+  // Update navbar
+  domElements.authButtons.style.display = "none";
+  domElements.userSection.innerHTML = `
+      <div class="user-profile" id="userProfileButton">
+        <div class="user-avatar">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="user-info">
+          <p class="user-name">${currentUser.name}</p>
+          <p class="user-email">${currentUser.email}</p>
+        </div>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-item" id="viewProfileBtn">
+          <i class="fas fa-user"></i> Profile
+        </div>
+        <div class="dropdown-item">
+          <i class="fas fa-bookmark"></i> My Wishlist
+        </div>
+        <div class="dropdown-item">
+          <i class="fas fa-shopping-bag"></i> Orders
+        </div>
+        ${
+          currentUser.role === "admin"
+            ? `
+          <div class="dropdown-item admin-item">
+            <i class="fas fa-cog"></i> Admin Panel
+          </div>
+        `
+            : ""
+        }
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
+      </div>
+    `;
+
+  // Show admin controls if user is admin
+  if (currentUser.role === "admin") {
+    domElements.adminControls.style.display = "block";
+  }
+
+  // Add event listeners for new elements
+  document
+    .getElementById("userProfileButton")
+    ?.addEventListener("click", toggleUserDropdown);
+  document
+    .getElementById("viewProfileBtn")
+    ?.addEventListener("click", showProfileModal);
+  document.getElementById("logoutBtn")?.addEventListener("click", logout);
+
+  // Update profile modal
+  domElements.profileName.textContent = currentUser.name;
+  domElements.profileEmail.textContent = currentUser.email;
+  domElements.userRole.textContent =
+    currentUser.role === "admin" ? "Administrator" : "Member";
+}
+
+function updateUIForLoggedOutUser(): void {
+  domElements.authButtons.style.display = "flex";
+  domElements.userSection.innerHTML = `
+      <div class="auth-buttons" id="authButtons">
+        <button id="loginBtn" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Login</button>
+        <button id="signupBtn" class="btn"><i class="fas fa-user-plus"></i> Sign Up</button>
+      </div>
+    `;
+
+  // Hide admin controls
+  domElements.adminControls.style.display = "none";
+
+  // Reattach event listeners
+  document
+    .getElementById("loginBtn")
+    ?.addEventListener("click", showLoginModal);
+  document
+    .getElementById("signupBtn")
+    ?.addEventListener("click", showSignupModal);
+}
+
+function toggleUserDropdown(): void {
+  const dropdown = document.getElementById("userDropdown");
+  if (dropdown) {
+    dropdown.classList.toggle("active");
+  }
+}
+
+// Book CRUD operations
+async function fetchBooks(page: number = 1): Promise<void> {
+  try {
+    showLoading();
+
+    const queryParams = new URLSearchParams({
+      ...currentFilters,
+      _page: page.toString(),
+      _limit: booksPerPage.toString(),
+    });
+
+    const url = `${API_URL}/books?${queryParams}`;
+
     const response = await fetch(url);
-    return await response.json();
+    if (!response.ok) throw new Error("Failed to fetch books");
+
+    const totalCount = response.headers.get("X-Total-Count");
+    totalPages = totalCount
+      ? Math.ceil(parseInt(totalCount) / booksPerPage)
+      : 1;
+
+    books = await response.json();
+
+    hideLoading();
+    displayBooks();
+    updatePagination();
   } catch (error) {
     console.error("Error fetching books:", error);
-    return [];
+    hideLoading();
+    showNoResults();
   }
 }
 
-// Display books in the UI
-async function displayBooks(books: Book[]): Promise<void> {
-  const bookList = document.getElementById("bookList") as HTMLUListElement;
-  if (!bookList) return;
-  bookList.innerHTML = "";
+function displayBooks(): void {
+  if (!domElements.bookList) return;
+
+  domElements.bookList.innerHTML = "";
 
   if (books.length === 0) {
-    bookList.innerHTML = "<p>No books found matching your search criteria.</p>";
+    showNoResults();
     return;
   }
-  async function fetchBookImage(imageUrl: string): Promise<string> {
-    try {
-      const response = await fetch(imageUrl);
-      if (response.ok) {
-        return imageUrl;
-      } else {
-        throw new Error("Image not found");
-      }
-    } catch {
-      return "Images/book.png";
-    }
-  }
 
-  for (const book of books) {
-    const bookItem = document.createElement("li");
-    bookItem.classList.add("book");
-    bookItem.setAttribute("data-id", book.id.toString());
+  hideNoResults();
 
-    const imageUrl = await fetchBookImage(book.image);
+  books.forEach((book) => {
+    const bookCard = document.createElement("div");
+    bookCard.className = "book-card";
+    // bookCard.dataset.id = book.id;
 
-    bookItem.innerHTML = `
-      <img src="${imageUrl}" alt="${book.title}">
-      <div>
-        <strong>${book.title}</strong> by ${book.author} <br>
-        Genre: ${book.genre} | Year: ${book.year} | Pages: ${book.pages} <br>
-        Price: <strong>$${book.price}</strong>
-      </div>
-      <button class="addToCart" data-title="${book.title}">Add to Cart</button>
-    `;
-    bookList.appendChild(bookItem);
+    const coverImg =
+      book.image && book.image.length > 0 ? book.image : "Images/book.png";
 
-    bookItem.querySelector(".addToCart")?.addEventListener("click", () => {
-      addToCart(book.title, book.author, book.price);
-    });
-  }
-}
-
-// Add a book to the cart
-function addToCart(title: string, author: string, price: number): void {
-  const existingItem = cart.find((item) => item.title === title);
-
-  if (existingItem) {
-    existingItem.quantity++;
-  } else {
-    cart.push({ title, author, price, quantity: 1 });
-  }
-
-  cartCount++;
-  updateCartCountDisplay();
-}
-
-// Update the cart count in the UI
-function updateCartCountDisplay(): void {
-  const cartCountElement = document.getElementById("cartItems");
-  if (cartCountElement) {
-    cartCountElement.textContent = `${cartCount}`;
-  }
-}
-
-// Show the cart modal
-function showCartModal(): void {
-  const cartModal = document.getElementById("cartModal") as HTMLDivElement;
-  const cartDetails = document.getElementById("cartDetails") as HTMLDivElement;
-  const cartTotal = document.getElementById(
-    "cartTotal"
-  ) as HTMLParagraphElement;
-
-  if (!cartModal || !cartDetails || !cartTotal) return;
-
-  if (cart.length === 0) {
-    cartDetails.innerHTML = "<p>Your cart is empty.</p>";
-    cartTotal.innerHTML = "";
-  } else {
-    cartDetails.innerHTML = "";
-    let totalAmount = 0;
-
-    cart.forEach((item) => {
-      totalAmount += item.price * item.quantity;
-      const cartRow = document.createElement("div");
-      cartRow.innerHTML = `
-        <p><strong>📖 ${item.title}</strong> by ${item.author} - $${item.price} x ${item.quantity}</p>
+    bookCard.innerHTML = `
+        <div class="book-cover">
+          <img src="${coverImg}" alt="${book.title}" onerror="this.src='Images/book.png'">
+          
+        </div>
+        <div class="book-info">
+          <h3 class="book-title">${book.title}</h3>
+          <p class="book-author">by ${book.author}</p>
+          <div class="book-meta">
+            <span class="book-genre">${book.genre}</span>
+            <span class="book-year">${book.year}</span>
+          </div>
+          <div class="book-price">$${book.price}</div>
+        </div>
+        <div class="book-actions">
+            <button class="btn-icon view-details" data-id="${book.id}">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon add-to-cart" data-id="${book.id}">
+              <i class="fas fa-cart-plus"></i>
+            </button>
+            <button class="btn-icon add-to-wishlist" data-id="${book.id}">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
       `;
-      cartDetails.appendChild(cartRow);
-    });
 
-    cartTotal.innerHTML = `<strong>Total: $${totalAmount}</strong>`;
-  }
+    domElements.bookList.appendChild(bookCard);
 
-  cartModal.style.display = "flex";
+    // Add event listeners for book actions
+    bookCard
+      .querySelector(".view-details")
+      ?.addEventListener("click", () => showBookDetails(book.id));
+    bookCard
+      .querySelector(".add-to-cart")
+      ?.addEventListener("click", () => addToCart(book));
+    bookCard
+      .querySelector(".add-to-wishlist")
+      ?.addEventListener("click", (e) => toggleWishlist(e, book.id));
+  });
 }
 
-// Close the cart modal
-function closeCartModal(): void {
-  const cartModal = document.getElementById("cartModal") as HTMLDivElement;
-  if (cartModal) cartModal.style.display = "none";
-}
-
-// Populate genre filter options
 async function populateFilters(): Promise<void> {
-  const books = await fetchBooks();
+  await fetchBooks();
   const genres = new Set<string>();
 
   books.forEach((book) => genres.add(book.genre));
-
   const genreFilter = document.getElementById(
     "genreFilter"
   ) as HTMLSelectElement;
@@ -166,286 +422,366 @@ async function populateFilters(): Promise<void> {
   });
 }
 
-// Handle search, filter, and sort
-async function handleSearch(): Promise<void> {
-  const searchQuery = (
-    document.getElementById("searchInput") as HTMLInputElement
-  )?.value.trim();
-  const selectedGenre = (
-    document.getElementById("genreFilter") as HTMLSelectElement
-  )?.value;
-  const sortBy = (document.getElementById("sortBy") as HTMLSelectElement)
-    ?.value;
+function showBookDetails(bookId: number): void {
+  const book = books.find((b) => b.id === bookId);
+  if (!book) return;
 
-  const params: Record<string, string> = {};
+  domElements.bookDetailsContent.innerHTML = `
+      <div class="book-details">
+        <div class="book-details-cover">
+          <img src="${book.image || "Images/book.png"}" alt="${
+    book.title
+  }" onerror="this.src='Images/book.png'">
+        </div>
+        <div class="book-details-info">
+          <h2>${book.title}</h2>
+          <p class="author">by ${book.author}</p>
+          <div class="book-metadata">
+            <div class="metadata-item">
+              <span class="label">Genre:</span>
+              <span class="value">${book.genre}</span>
+            </div>
+            <div class="metadata-item">
+              <span class="label">Published:</span>
+              <span class="value">${book.year}</span>
+            </div>
+            <div class="metadata-item">
+              <span class="label">Publisher:</span>
+              <span class="value">${book.publisher}</span>
+            </div>
+            <div class="metadata-item">
+              <span class="label">Pages:</span>
+              <span class="value">${book.pages}</span>
+            </div>
+          </div>
+          <div class="book-price-section">
+            <div class="price">$${book.price.toFixed(2)}</div>
+            <button class="btn add-to-cart-btn" data-id="${book.id}">
+              <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+          <div class="book-description">
+            <h3>Description</h3>
+            <p>${book.description}</p>
+          </div>
+        </div>
+      </div>
+        `;
 
-  if (searchQuery) params.search = searchQuery;
-  if (selectedGenre) params.genre = selectedGenre;
-  if (sortBy) params.sortBy = sortBy;
+  // Add event listener for the "Add to Cart" button in the details modal
+  domElements.bookDetailsContent
+    .querySelector(".add-to-cart-btn")
+    ?.addEventListener("click", () => addToCart(book));
 
-  const books = await fetchBooks(params);
-  displayBooks(books);
+  // Show the book details modal
+  showModal(domElements.bookDetailsModal);
 }
 
-// Set up event listeners
-function setupEventListeners(): void {
-  const searchInput = document.getElementById(
-    "searchInput"
-  ) as HTMLInputElement;
-  searchInput?.addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      handleSearch();
-    }
+function addToCart(book: Book): void {
+  const existingItem = cart.find((item) => item.id === book.id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      price: book.price,
+      quantity: 1,
+      image: book.image,
+    });
+  }
+
+  updateCartUI();
+  showToast(`${book.title} added to cart!`);
+}
+
+function updateCartUI(): void {
+  // Update cart badge
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  domElements.cartItems.textContent = totalItems.toString();
+
+  // Update cart modal content
+  domElements.cartDetails.innerHTML = "";
+  let totalPrice = 0;
+
+  cart.forEach((item) => {
+    const cartItem = document.createElement("div");
+    cartItem.className = "cart-item";
+    cartItem.innerHTML = `
+        <div class="cart-item-image">
+          <img src="${item.image || "Images/book.png"}" alt="${
+      item.title
+    }" onerror="this.src='Images/book.png'">
+        </div>
+        <div class="cart-item-info">
+          <h4>${item.title}</h4>
+          <p>by ${item.author}</p>
+          <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+          <div class="cart-item-quantity">
+            <button class="btn-icon decrease-quantity" data-id="${item.id}">
+              <i class="fas fa-minus"></i>
+            </button>
+            <span>${item.quantity}</span>
+            <button class="btn-icon increase-quantity" data-id="${item.id}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+        <button class="btn-icon remove-item" data-id="${item.id}">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+
+    domElements.cartDetails.appendChild(cartItem);
+
+    // Add event listeners for quantity controls
+    cartItem
+      .querySelector(".decrease-quantity")
+      ?.addEventListener("click", () => updateCartItemQuantity(item.id, -1));
+    cartItem
+      .querySelector(".increase-quantity")
+      ?.addEventListener("click", () => updateCartItemQuantity(item.id, 1));
+    cartItem
+      .querySelector(".remove-item")
+      ?.addEventListener("click", () => removeCartItem(item.id));
+
+    totalPrice += item.price * item.quantity;
   });
 
-  document
-    .getElementById("genreFilter")
-    ?.addEventListener("change", handleSearch);
-  document.getElementById("sortBy")?.addEventListener("change", handleSearch);
+  // Update total price
+  domElements.cartTotal.textContent = `Total: $${totalPrice.toFixed(2)}`;
+}
 
-  const addBookBtn = document.getElementById("addBookBtn") as HTMLButtonElement;
-  const bookModal = document.getElementById("bookModal") as HTMLDivElement;
-  const closeModalBtn = document.querySelector(".close") as HTMLSpanElement;
+function updateCartItemQuantity(bookId: number, change: number): void {
+  const item = cart.find((item) => item.id === bookId);
+  if (!item) return;
 
-  addBookBtn?.addEventListener("click", () => {
-    bookModal.style.display = "flex";
-  });
+  item.quantity += change;
 
-  closeModalBtn?.addEventListener("click", () => {
-    bookModal.style.display = "none";
-  });
+  if (item.quantity <= 0) {
+    removeCartItem(bookId);
+  } else {
+    updateCartUI();
+  }
+}
 
-  window.addEventListener("click", (event) => {
-    if (event.target === bookModal) {
-      bookModal.style.display = "none";
-    }
-  });
+function removeCartItem(bookId: number): void {
+  cart = cart.filter((item) => item.id !== bookId);
+  updateCartUI();
+}
 
-  document
-    .getElementById("bookForm")
-    ?.addEventListener("submit", async (event) => {
-      event.preventDefault();
+function clearCart(): void {
+  cart = [];
+  updateCartUI();
+  showToast("Cart cleared!");
+}
 
-      const id = parseInt(
-        (document.getElementById("id") as HTMLInputElement).value,
-        10
-      );
-      const title = (document.getElementById("title") as HTMLInputElement)
-        .value;
-      const author = (document.getElementById("author") as HTMLInputElement)
-        .value;
-      const year = parseInt(
-        (document.getElementById("year") as HTMLInputElement).value,
-        10
-      );
-      const genre = (document.getElementById("genre") as HTMLInputElement)
-        .value;
-      const pages = parseInt(
-        (document.getElementById("pages") as HTMLInputElement).value,
-        10
-      );
-      const publisher = (
-        document.getElementById("publisher") as HTMLInputElement
-      ).value;
-      const description = (
-        document.getElementById("description") as HTMLInputElement
-      ).value;
-      const image = (document.getElementById("image") as HTMLInputElement)
-        .value;
-      const price = parseInt(
-        (document.getElementById("price") as HTMLInputElement).value,
-        10
-      );
+function checkout(): void {
+  if (cart.length === 0) {
+    showToast("Your cart is empty!");
+    return;
+  }
 
-      const book = {
-        id,
-        title,
-        author,
-        genre,
-        year,
-        pages,
-        publisher,
-        description,
-        image,
-        price,
-      };
+  if (!currentUser) {
+    showToast("Please log in to proceed with checkout.");
+    showLoginModal();
+    return;
+  }
 
-      try {
-        const response = await fetch("http://localhost:3000/books", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(book),
-        });
+  // Simulate checkout process
+  showToast("Checkout successful! Thank you for your purchase.");
+  clearCart();
+  closeCartModal();
+}
 
-        if (!response.ok) throw new Error("Failed to add book");
+// Wishlist functionality
+function toggleWishlist(event: Event, bookId: number): void {
+  event.preventDefault();
+  if (!currentUser) {
+    showToast("Please log in to add to wishlist.");
+    showLoginModal();
+    return;
+  }
 
-        const newBook = await response.json();
-        console.log("Book added:", newBook);
+  // Simulate wishlist toggle
+  showToast("Added to wishlist!");
+}
 
-        // Refresh books list
-        const books = await fetchBooks();
-        displayBooks(books);
+// Pagination
+function updatePagination(): void {
+  domElements.pagination.innerHTML = "";
 
-        // Close modal
-        bookModal.style.display = "none";
-      } catch (error) {
-        console.error("Error:", error);
-      }
+  for (let i = 1; i <= totalPages; i++) {
+    const pageButton = document.createElement("button");
+    pageButton.className = `btn ${i === currentPage ? "active" : ""}`;
+    pageButton.textContent = i.toString();
+    pageButton.addEventListener("click", () => {
+      currentPage = i;
+      fetchBooks(currentPage);
     });
 
-  const updateBookBtn = document.getElementById(
-    "updateBook"
-  ) as HTMLButtonElement;
-  updateBookBtn?.addEventListener("click", () => {
-    const bookItems = document.querySelectorAll(".book");
+    domElements.pagination.appendChild(pageButton);
+  }
+}
 
-    bookItems.forEach((bookItem) => {
-      const deleteIcon = document.createElement("span");
-      deleteIcon.innerHTML = "🗑️";
-      deleteIcon.classList.add("delete-icon");
-      deleteIcon.addEventListener("click", async () => {
-        try {
-          const bookId = bookItem.getAttribute("data-id");
-          if (!bookId) throw new Error("Book ID not found");
+// Modal functions
+function showModal(modal: HTMLElement): void {
+  modal.style.display = "flex";
+}
 
-          const response = await fetch(
-            `http://localhost:3000/books/${bookId}`,
-            {
-              method: "DELETE",
-            }
-          );
+function closeModal(modal: HTMLElement): void {
+  modal.style.display = "none";
+}
 
-          if (!response.ok) throw new Error("Failed to delete book");
+function showLoginModal(): void {
+  showModal(domElements.loginModal);
+}
 
-          console.log("Book deleted:", bookItem);
-          bookItem.remove();
-        } catch (error) {
-          console.error("Error deleting book:", error);
-        }
-      });
+function closeLoginModal(): void {
+  closeModal(domElements.loginModal);
+}
 
-      const editIcon = document.createElement("span");
-      editIcon.innerHTML = "✏️";
-      editIcon.classList.add("edit-icon");
-      editIcon.addEventListener("click", async () => {
-        const bookId = bookItem.getAttribute("data-id");
-        if (!bookId) {
-          console.error("Book ID not found");
-          return;
-        }
+function showSignupModal(): void {
+  showModal(domElements.signupModal);
+}
 
-        try {
-          const response = await fetch(`http://localhost:3000/books/${bookId}`);
-          if (!response.ok) throw new Error("Failed to fetch book details");
+function closeSignupModal(): void {
+  closeModal(domElements.signupModal);
+}
 
-          const book = await response.json();
+function showProfileModal(): void {
+  showModal(domElements.profileModal);
+}
 
-          // Populate the form with book details
-          (document.getElementById("id") as HTMLInputElement).value = book.id;
-          (document.getElementById("title") as HTMLInputElement).value =
-            book.title;
-          (document.getElementById("author") as HTMLInputElement).value =
-            book.author;
-          (document.getElementById("year") as HTMLInputElement).value =
-            book.year;
-          (document.getElementById("genre") as HTMLInputElement).value =
-            book.genre;
-          (document.getElementById("pages") as HTMLInputElement).value =
-            book.pages;
-          (document.getElementById("publisher") as HTMLInputElement).value =
-            book.publisher;
-          (document.getElementById("description") as HTMLInputElement).value =
-            book.description;
-          (document.getElementById("image") as HTMLInputElement).value =
-            book.image;
-          (document.getElementById("price") as HTMLInputElement).value =
-            book.price;
+function closeProfileModal(): void {
+  closeModal(domElements.profileModal);
+}
 
-          // Show the modal
-          bookModal.style.display = "flex";
+function showCartModal(): void {
+  showModal(domElements.cartModal);
+}
 
-          // Handle form submission for updating the book
-          document
-            .getElementById("bookForm")
-            ?.addEventListener("submit", async (event) => {
-              event.preventDefault();
+function closeCartModal(): void {
+  closeModal(domElements.cartModal);
+}
 
-              const updatedBook = {
-                id: parseInt(
-                  (document.getElementById("id") as HTMLInputElement).value,
-                  10
-                ),
-                title: (document.getElementById("title") as HTMLInputElement)
-                  .value,
-                author: (document.getElementById("author") as HTMLInputElement)
-                  .value,
-                year: parseInt(
-                  (document.getElementById("year") as HTMLInputElement).value,
-                  10
-                ),
-                genre: (document.getElementById("genre") as HTMLInputElement)
-                  .value,
-                pages: parseInt(
-                  (document.getElementById("pages") as HTMLInputElement).value,
-                  10
-                ),
-                publisher: (
-                  document.getElementById("publisher") as HTMLInputElement
-                ).value,
-                description: (
-                  document.getElementById("description") as HTMLInputElement
-                ).value,
-                image: (document.getElementById("image") as HTMLInputElement)
-                  .value,
-                price: parseInt(
-                  (document.getElementById("price") as HTMLInputElement).value,
-                  10
-                ),
-              };
+// Toast notifications
+function showToast(
+  message: string,
+  type: "success" | "error" | "info" = "info"
+): void {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
 
-              try {
-                const response = await fetch(
-                  `http://localhost:3000/books/${bookId}`,
-                  {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(updatedBook),
-                  }
-                );
+  domElements.toastContainer.appendChild(toast);
 
-                if (!response.ok) throw new Error("Failed to update book");
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
 
-                const updatedBookResponse = await response.json();
-                console.log("Book updated:", updatedBookResponse);
+// Loading and no results
+function showLoading(): void {
+  domElements.loadingIndicator.style.display = "flex";
+}
 
-                // Refresh books list
-                const books = await fetchBooks();
-                displayBooks(books);
+function hideLoading(): void {
+  domElements.loadingIndicator.style.display = "none";
+}
 
-                // Close modal
-                bookModal.style.display = "none";
-              } catch (error) {
-                console.error("Error updating book:", error);
-              }
-            });
-        } catch (error) {
-          console.error("Error fetching book details:", error);
-        }
-      });
+function showNoResults(): void {
+  domElements.noResults.style.display = "flex";
+}
 
-      bookItem.querySelector("img")?.parentElement?.appendChild(deleteIcon);
-      bookItem.querySelector("img")?.parentElement?.appendChild(editIcon);
+function hideNoResults(): void {
+  domElements.noResults.style.display = "none";
+}
+
+// Event listeners
+function attachEventListeners(): void {
+  // Search and filter
+  domElements.searchBtn.addEventListener("click", () => {
+    currentFilters.search = domElements.searchInput.value;
+    fetchBooks();
+  });
+
+  domElements.applyFilters.addEventListener("click", () => {
+    currentFilters.genre = domElements.genreFilter.value;
+    currentFilters.sortBy = domElements.sortBy.value;
+    currentFilters.orderBy = domElements.orderBy.value;
+    currentFilters.minPrice = domElements.minPrice.value;
+    currentFilters.maxPrice = domElements.maxPrice.value;
+    fetchBooks();
+  });
+
+  domElements.resetFilters.addEventListener("click", () => {
+    currentFilters = {};
+    domElements.genreFilter.value = "";
+    domElements.sortBy.value = "title";
+    domElements.orderBy.value = "asc";
+    domElements.minPrice.value = "";
+    domElements.maxPrice.value = "";
+    fetchBooks();
+  });
+
+  // Cart
+  domElements.cartBtn.addEventListener("click", showCartModal);
+  domElements.clearCartBtn.addEventListener("click", clearCart);
+  domElements.checkoutBtn.addEventListener("click", checkout);
+
+  // Auth
+  domElements.loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = (document.getElementById("loginEmail") as HTMLInputElement)
+      .value;
+    const password = (
+      document.getElementById("loginPassword") as HTMLInputElement
+    ).value;
+    await login(email, password);
+  });
+
+  domElements.signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = (document.getElementById("signupName") as HTMLInputElement)
+      .value;
+    const email = (document.getElementById("signupEmail") as HTMLInputElement)
+      .value;
+    const password = (
+      document.getElementById("signupPassword") as HTMLInputElement
+    ).value;
+    await signup(name, email, password);
+  });
+
+  domElements.switchToLogin.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeSignupModal();
+    showLoginModal();
+  });
+
+  domElements.switchToSignup.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeLoginModal();
+    showSignupModal();
+  });
+
+  // Close modals
+  document.querySelectorAll(".close").forEach((closeBtn) => {
+    closeBtn.addEventListener("click", () => {
+      const modal = closeBtn.closest(".modal") as HTMLElement;
+      closeModal(modal);
     });
   });
 }
 
-// Initialize the app
+// Initialize app
 async function init(): Promise<void> {
-  const books = await fetchBooks();
-  displayBooks(books);
+  await checkAuth();
+  fetchBooks();
   populateFilters();
-  setupEventListeners();
+  attachEventListeners();
 }
 
 // Start the app
