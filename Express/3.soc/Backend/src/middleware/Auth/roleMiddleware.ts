@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { RoleRequest } from "../../utils/interface";
-import asyncHandler from "../asyncHandler";
+import { RoleRequest } from "@app/utils/types/userRoles";
+import asyncHandler from "@app/middleware/asyncHandler";
 
 //ensure user has required roles
 export const roleGuard = (allowedRoles: string[]) =>
@@ -17,4 +17,4 @@ export const roleGuard = (allowedRoles: string[]) =>
 // Specific guards
 export const adminGuard = roleGuard(["Admin"]); // Full app control
 export const librarianGuard = roleGuard(["Librarian"]); // Event creation & management
-export const borrowerGuard = roleGuard(["Borrower"]); // borrower-only actions
+export const borrowerGuard = roleGuard(["borrower"]); // Attendee-only actions

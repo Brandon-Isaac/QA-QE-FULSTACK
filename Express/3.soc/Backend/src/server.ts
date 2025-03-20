@@ -1,41 +1,35 @@
+// main.ts
 import { setupAliases } from "import-aliases";
 setupAliases();
-import cookieParser from "cookie-parser";
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import userRoutes from "./routes/userRoutes";
 import bookRoutes from "./routes/bookRoutes";
-import { errorHandler } from "./middlewares/errorHandler";
-import userRoutes from "@app/routes/userRoutes";
-import authRoutes from "./routes/authRoutes";
-import { checkAuth } from "./controllers/authController";
-import { authenticateToken } from "./middlewares/Auth/authenticateToken";
+import authRoutes from "@app/routes/authRoutes";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
-//app.use(cors());
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    methods: "GET, PUT,POST,PATCH,DELETE",
-    credentials: true, //allows cookies and auth headers
+    origin: ["http://localhost:5173", "http://127.0.0.1:5501"],
+    credentials: true, // This is important for cookies
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+const _dirname = path.resolve();
+const port = process.env.PORT;
 
-// Routes
-app.use("/books", bookRoutes);
-app.use("/users", userRoutes);
-app.use("/", authRoutes);
+//Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
-
-// Middleware
-app.use(errorHandler);
+app.use("/api/books", bookRoutes);
 
 app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+  console.log(`Server is running on port ${port}😊😊`);
 });

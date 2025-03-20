@@ -23,25 +23,22 @@ export const generateToken = (
   }
 
   try {
-    //Lets generate a short - lived acccess token for 15 minutes
-    // sign(payload: string | Buffer | object, secretOrPrivateKey: null, options?: jwt.SignOptions & { algorithm: "none"; }): string
+    // Use consistent property name: userId (not id)
     const accessToken = jwt.sign({ userId, roleId }, jwtSecret, {
       expiresIn: "15m",
     });
-    //Lets generate a long - lived acccess token for 30days
     const refreshToken = jwt.sign({ userId }, refreshSecret, {
       expiresIn: "30d",
     });
 
-    //set Access token as HTTP-Only secure cookie
+    // Rest of your code remains the same
     res.cookie("access_token", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== "development", // Secure in production
+      secure: process.env.NODE_ENV !== "development",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    // Set Refresh Token as HTTP-Only Secure Cookie
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",

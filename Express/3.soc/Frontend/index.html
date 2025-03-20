@@ -3,215 +3,225 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="auth.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    <title>Library Management System - Authentication</title>
+    <link rel="stylesheet" href="style.css" />
+    <title>Library Management System</title>
   </head>
   <body>
-    <!-- Login Form -->
-    <div id="loginContainer" class="auth-container">
-      <div class="auth-form-wrapper">
-        <div class="auth-header">
-          <h2><i class="fas fa-book-reader"></i> Library Management System</h2>
+    <!-- Authentication Container -->
+    <div class="auth-container" id="authContainer">
+      <!-- Login Form -->
+      <div id="loginContainer">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn view-btn" style="width: 100%">
+              Login
+            </button>
+          </div>
+        </form>
+        <a class="auth-link" id="showRegister"
+          >Don't have an account? Register here</a
+        >
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerContainer" class="hidden">
+        <h2>Create a New Account</h2>
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="registerName">Full Name</label>
+            <input type="text" id="registerName" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="registerEmail">Email</label>
+            <input type="email" id="registerEmail" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="registerPassword">Password</label>
+            <input
+              type="password"
+              id="registerPassword"
+              name="password"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="registerRole">Role</label>
+            <select id="registerRole" name="role">
+              <option value="3">Reader</option>
+              <option value="2">Librarian</option>
+              <option value="1">Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn view-btn" style="width: 100%">
+              Register
+            </button>
+          </div>
+        </form>
+        <a class="auth-link" id="showLogin"
+          >Already have an account? Login here</a
+        >
+      </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div class="main-container hidden">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <h2>Datches Library</h2>
+        <ul class="sidebar-menu">
+          <li><a href="#books">Browse Books</a></li>
+          <li><a href="#borrowed">My Borrowed Books</a></li>
+          <li><a href="#profile">My Profile</a></li>
+          <li><a href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+          <h1>Datches Library Management System</h1>
+
+          <div class="user-section" id="userSection">
+            <div id="userInfo"></div>
+
+            <div class="cart-icon" id="cartIcon">
+              🛒
+              <span class="cart-count" id="cartCount">0</span>
+
+              <div class="cart-dropdown" id="cartDropdown">
+                <div class="cart-items" id="cartItems">
+                  <p class="empty-cart">Your cart is empty</p>
+                </div>
+                <div class="cart-actions">
+                  <button class="btn delete-btn" id="clearCartBtn">
+                    Clear Cart
+                  </button>
+                  <button class="btn add-to-cart-btn" id="borrowBooksBtn">
+                    Borrow Books
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="auth-body">
-          <div class="auth-form-container">
-            <h3><i class="fas fa-sign-in-alt"></i> Login to Your Account</h3>
-            <div id="loginError" class="auth-error"></div>
-            <form id="loginForm" class="auth-form">
-              <div class="form-group">
-                <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" required />
-              </div>
+        <!-- Book Section -->
+        <div class="book-section" id="bookSection">
+          <h2>Available Books</h2>
 
-              <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <div class="password-input">
-                  <input type="password" id="loginPassword" required />
-                  <i
-                    class="fas fa-eye toggle-password"
-                    data-for="loginPassword"
-                  ></i>
-                </div>
-              </div>
+          <div class="book-filters">
+            <input type="text" placeholder="Search books..." id="searchInput" />
+            <select id="filterGenre">
+              <option value="">All Genres</option>
+            </select>
+            <select id="sortOptions">
+              <option value="">Sort By</option>
+              <option value="title-asc">Title (A-Z)</option>
+              <option value="title-desc">Title (Z-A)</option>
+              <option value="price-asc">Price (Low to High)</option>
+              <option value="price-desc">Price (High to Low)</option>
+              <option value="year-asc">Year (Oldest First)</option>
+              <option value="year-desc">Year (Newest First)</option>
+            </select>
+            <button class="btn add-to-cart-btn" id="addBookBtn">
+              Add New Book
+            </button>
+          </div>
 
-              <div class="form-group role-selection">
-                <label>Login as:</label>
-                <div class="role-options">
-                  <div class="role-option">
-                    <input
-                      type="radio"
-                      id="roleBorrower"
-                      name="userRole"
-                      value="borrower"
-                      checked
-                    />
-                    <label for="roleBorrower">Borrower</label>
-                  </div>
-                  <div class="role-option">
-                    <input
-                      type="radio"
-                      id="roleLibrarian"
-                      name="userRole"
-                      value="librarian"
-                    />
-                    <label for="roleLibrarian">Librarian</label>
-                  </div>
-                  <div class="role-option">
-                    <input
-                      type="radio"
-                      id="roleAdmin"
-                      name="userRole"
-                      value="admin"
-                    />
-                    <label for="roleAdmin">Admin</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group remember-me">
-                <input type="checkbox" id="rememberMe" />
-                <label for="rememberMe">Remember me</label>
-                <a href="#" class="forgot-password">Forgot password?</a>
-              </div>
-
-              <button type="submit" class="btn auth-btn">Login</button>
-            </form>
-            <div class="auth-footer">
-              <p>
-                Don't have an account?
-                <a href="#" id="switchToSignup">Sign up</a>
-              </p>
-            </div>
+          <div class="book-list" id="bookList">
+            <!-- Books will be added here dynamically -->
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Signup Form -->
-    <div id="signupContainer" class="auth-container hidden">
-      <div class="auth-form-wrapper">
-        <div class="auth-header">
-          <h2><i class="fas fa-book-reader"></i> Library Management System</h2>
-        </div>
-        <div class="auth-body">
-          <div class="auth-form-container">
-            <h3><i class="fas fa-user-plus"></i> Create an Account</h3>
-            <div id="signupError" class="auth-error"></div>
-            <form id="signupForm" class="auth-form">
-              <div class="form-group">
-                <label for="signupName">Full Name</label>
-                <input type="text" id="signupName" required />
-              </div>
-
-              <div class="form-group">
-                <label for="signupEmail">Email</label>
-                <input type="email" id="signupEmail" required />
-              </div>
-
-              <div class="form-group">
-                <label for="signupPassword">Password</label>
-                <div class="password-input">
-                  <input type="password" id="signupPassword" required />
-                  <i
-                    class="fas fa-eye toggle-password"
-                    data-for="signupPassword"
-                  ></i>
-                </div>
-                <div class="password-strength">
-                  <div class="strength-meter" id="passwordStrength"></div>
-                  <span id="passwordStrengthText">Password strength</span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <div class="password-input">
-                  <input type="password" id="confirmPassword" required />
-                  <i
-                    class="fas fa-eye toggle-password"
-                    data-for="confirmPassword"
-                  ></i>
-                </div>
-              </div>
-
-              <div class="form-group role-selection">
-                <label>Register as:</label>
-                <div class="role-options">
-                  <div class="role-option">
-                    <input
-                      type="radio"
-                      id="signupRoleBorrower"
-                      name="signupUserRole"
-                      value="borrower"
-                      checked
-                    />
-                    <label for="signupRoleBorrower">Borrower</label>
-                  </div>
-                </div>
-                <p class="role-note">
-                  Note: Librarian and Admin roles require approval
-                </p>
-              </div>
-
-              <div class="form-group terms-group">
-                <input type="checkbox" id="agreeTerms" required />
-                <label for="agreeTerms"
-                  >I agree to the <a href="#">Terms of Service</a> and
-                  <a href="#">Privacy Policy</a></label
-                >
-              </div>
-
-              <button type="submit" class="btn auth-btn">Create Account</button>
-            </form>
-            <div class="auth-footer">
-              <p>
-                Already have an account?
-                <a href="#" id="switchToLogin">Login</a>
-              </p>
+    <!-- Book Form Modal -->
+    <div class="modal" id="bookFormModal">
+      <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <div class="book-form">
+          <h2>Add New Book</h2>
+          <form id="bookForm">
+            <div class="form-group">
+              <label for="bookTitle">Title</label>
+              <input type="text" id="bookTitle" name="title" required />
             </div>
-          </div>
+            <div class="form-group">
+              <label for="bookAuthor">Author</label>
+              <input type="text" id="bookAuthor" name="author" required />
+            </div>
+            <div class="form-group">
+              <label for="bookGenre">Genre</label>
+              <input type="text" id="bookGenre" name="genre" required />
+            </div>
+            <div class="form-group">
+              <label for="bookYear">Year</label>
+              <input type="number" id="bookYear" name="year" required />
+            </div>
+            <div class="form-group">
+              <label for="bookPages">Pages</label>
+              <input type="number" id="bookPages" name="pages" required />
+            </div>
+            <div class="form-group">
+              <label for="bookPublisher">Publisher</label>
+              <input type="text" id="bookPublisher" name="publisher" required />
+            </div>
+            <div class="form-group">
+              <label for="bookDescription">Description</label>
+              <textarea
+                id="bookDescription"
+                name="description"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="bookImage">Image URL</label>
+              <input type="text" id="bookImage" name="image" required />
+            </div>
+            <div class="form-group">
+              <label for="bookPrice">Price</label>
+              <input
+                type="number"
+                id="bookPrice"
+                name="price"
+                step="0.01"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <button
+                type="submit"
+                class="btn add-to-cart-btn"
+                style="width: 100%"
+              >
+                Save Book
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
     <script src="dist/index.js"></script>
-    <script>
-      // Basic JS for toggling between forms
-      document
-        .getElementById("switchToSignup")
-        .addEventListener("click", function (e) {
-          e.preventDefault();
-          document.getElementById("loginContainer").classList.add("hidden");
-          document.getElementById("signupContainer").classList.remove("hidden");
-        });
-
-      document
-        .getElementById("switchToLogin")
-        .addEventListener("click", function (e) {
-          e.preventDefault();
-          document.getElementById("signupContainer").classList.add("hidden");
-          document.getElementById("loginContainer").classList.remove("hidden");
-        });
-
-      // Toggle password visibility
-      document.querySelectorAll(".toggle-password").forEach(function (toggle) {
-        toggle.addEventListener("click", function () {
-          const passwordField = document.getElementById(
-            this.getAttribute("data-for")
-          );
-          const type =
-            passwordField.getAttribute("type") === "password"
-              ? "text"
-              : "password";
-          passwordField.setAttribute("type", type);
-          this.classList.toggle("fa-eye");
-          this.classList.toggle("fa-eye-slash");
-        });
-      });
-    </script>
   </body>
 </html>

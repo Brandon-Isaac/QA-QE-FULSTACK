@@ -1,3 +1,4 @@
+"use strict";
 // // Types and Interfaces
 // interface Book {
 //     book_id: number;
@@ -11,7 +12,6 @@
 //     image: string;
 //     publisher: string;
 // }
-
 // interface CartItem {
 //     id: number;
 //     title: string;
@@ -20,7 +20,6 @@
 //     quantity: number;
 //     image: string;
 // }
-
 // interface User {
 //     user_id: number;
 //     name?: string;
@@ -28,7 +27,6 @@
 //     role_id: number;
 //     role_name?: string;
 // }
-
 // interface AuthResponse {
 //     user: User;
 //     token: string;
@@ -38,10 +36,8 @@
 //     LIBRARIAN: 2,
 //     BORROWER: 3,
 // };
-
 // // API URL
 // const API_URL = "http://localhost:3000";
-
 // // Global state
 // let books: Book[] = [];
 // let cart: CartItem[] = [];
@@ -52,7 +48,6 @@
 // let totalPages = 1;
 // let booksPerPage = 8;
 // let currentFilters: Record<string, any> = {};
-
 // // DOM Elements
 // const domElements = {
 //     bookList: document.getElementById("bookList") as HTMLDivElement,
@@ -103,14 +98,12 @@
 //     signupError: document.getElementById("signupError") as HTMLDivElement,
 //     toastContainer: document.getElementById("toastContainer") as HTMLDivElement,
 // };
-
 // // logout function
 // function logout(): void {
 //     // Clear user data from memory
 //     currentUser = null;
 //     token = null;
 //     localStorage.removeItem("token");
-
 //     // Call your logout endpoint
 //     fetch(`${API_URL}/logout`, {
 //         method: "POST",
@@ -123,7 +116,6 @@
 //             if (response.ok) {
 //                 // Update UI
 //                 updateUIForLoggedOutUser();
-
 //                 // Redirect user to the specified URL
 //                 window.location.href = "http://localhost:5173/";
 //             } else {
@@ -134,7 +126,6 @@
 //             console.error("Logout error:", error);
 //         });
 // }
-
 // // Using a different name to avoid duplication with auth.ts
 // async function fetchCurrentUser(): Promise<boolean> {
 //     try {
@@ -142,7 +133,6 @@
 //         if (domElements.loginError) {
 //             domElements.loginError.textContent = "";
 //         }
-
 //         // Get token from localStorage
 //         const storedToken = localStorage.getItem("token");
 //         if (!storedToken) {
@@ -157,20 +147,16 @@
 //                 "Content-Type": "application/json",
 //             },
 //         });
-
 //         if (!response.ok) {
 //             // If token is invalid, clear it from storage and force re-authentication
 //             if (response.status === 401 || response.status === 403) {
 //                 localStorage.removeItem("token");
 //                 throw new Error("Session expired. Please log in again.");
 //             }
-
 //             const errorData = await response.json();
 //             throw new Error(errorData.message || "Authentication failed");
 //         }
-
 //         const userData = await response.json();
-
 //         // Update current user data based on the response structure
 //         currentUser = {
 //             id: userData.user.userId,
@@ -179,7 +165,6 @@
 //             email: userData.user.email || "",
 //             role_id: userData.user.roleId as 1 | 2 | 3, // Enforcing strict role types
 //         };
-
 //         // Update token if a new one is provided
 //         if (userData.token) {
 //             console.log("New token received, updating...");
@@ -191,20 +176,16 @@
 //         return true;
 //     } catch (error) {
 //         console.error("Getting current user failed:", error);
-
 //         // Display user-friendly error messages
 //         if (domElements.loginError) {
 //             domElements.loginError.textContent =
 //                 error instanceof Error ? error.message : "Authentication failed";
 //         }
-
 //         return false;
 //     }
 // }
-
 // function updateUIForLoggedInUser(): void {
 //     if (!currentUser) return;
-
 //     // Update the profile section
 //     domElements.profileSection.innerHTML = `
 //     <div class="user-profile">
@@ -223,14 +204,12 @@
 //       </div>
 //     </div>
 //   `;
-
 //     // Show admin controls if user is admin
 //     if (currentUser.role_id === 1) {
 //         domElements.adminControls.style.display = "block";
 //     } else {
 //         domElements.adminControls.style.display = "none";
 //     }
-
 //     // Update profile modal if it exists
 //     if (domElements.profileName) {
 //         domElements.profileName.textContent = currentUser.name || "User";
@@ -247,13 +226,10 @@
 //                     : "Borrower";
 //     }
 // }
-
 // function updateUIForLoggedOutUser(): void {
 //     domElements.authButtons.style.display = "flex";
-
 //     // Hide admin controls
 //     domElements.adminControls.style.display = "none";
-
 //     // Update profile section for logged out state
 //     domElements.profileSection.innerHTML = `
 //     <div class="auth-buttons" id="authButtons">
@@ -265,39 +241,30 @@
 //       </button>
 //     </div>
 //   `;
-
 //     // Reattach event listeners since we replaced the HTML
-
 //     function toggleUserDropdown(): void {
 //         const dropdown = document.getElementById("userDropdown");
 //         if (dropdown) {
 //             dropdown.classList.toggle("active");
 //         }
 //     }
-
 //     // Book CRUD operations
 //     async function fetchBooks(page: number = 1): Promise<void> {
 //         try {
 //             showLoading();
-
 //             const queryParams = new URLSearchParams({
 //                 ...currentFilters,
 //                 _page: page.toString(),
 //                 _limit: booksPerPage.toString(),
 //             });
-
 //             const url = `${API_URL}/books?${queryParams}`;
-
 //             const response = await fetch(url);
 //             if (!response.ok) throw new Error("Failed to fetch books");
-
 //             const totalCount = response.headers.get("X-Total-Count");
 //             totalPages = totalCount
 //                 ? Math.ceil(parseInt(totalCount) / booksPerPage)
 //                 : 1;
-
 //             books = await response.json();
-
 //             hideLoading();
 //             displayBooks();
 //             updatePagination();
@@ -307,26 +274,19 @@
 //             showNoResults();
 //         }
 //     }
-
 //     function displayBooks(): void {
 //         if (!domElements.bookList) return;
-
 //         domElements.bookList.innerHTML = "";
-
 //         if (books.length === 0) {
 //             showNoResults();
 //             return;
 //         }
-
 //         hideNoResults();
-
 //         books.forEach((book) => {
 //             const bookCard = document.createElement("div");
 //             bookCard.className = "book-card";
-
 //             const coverImg =
 //                 book.image && book.image.length > 0 ? book.image : "Images/book.png";
-
 //             bookCard.innerHTML = `
 //         <div class="book-cover">
 //           <img src="${coverImg}" alt="${book.title}" onerror="this.src='Images/book.png'">
@@ -352,9 +312,7 @@
 //             </button>
 //           </div>
 //       `;
-
 //             domElements.bookList.appendChild(bookCard);
-
 //             // Add event listeners for book actions
 //             bookCard
 //                 .querySelector(".view-details")
@@ -367,17 +325,14 @@
 //                 ?.addEventListener("click", (e) => toggleWishlist(e, book.book_id));
 //         });
 //     }
-
 //     async function populateFilters(): Promise<void> {
 //         await fetchBooks();
 //         const genres = new Set<string>();
-
 //         books.forEach((book) => genres.add(book.genre));
 //         const genreFilter = document.getElementById(
 //             "genreFilter"
 //         ) as HTMLSelectElement;
 //         if (!genreFilter) return;
-
 //         genreFilter.innerHTML = '<option value="">All Genres</option>';
 //         genres.forEach((genre) => {
 //             const option = document.createElement("option");
@@ -386,11 +341,9 @@
 //             genreFilter.appendChild(option);
 //         });
 //     }
-
 //     function showBookDetails(bookId: number): void {
 //         const book = books.find((b) => b.book_id === bookId);
 //         if (!book) return;
-
 //         domElements.bookDetailsContent.innerHTML = `
 //       <div class="book-details">
 //         <div class="book-details-cover">
@@ -432,19 +385,15 @@
 //         </div>
 //       </div>
 //         `;
-
 //         // Add event listener for the "Add to Cart" button in the details modal
 //         domElements.bookDetailsContent
 //             .querySelector(".add-to-cart-btn")
 //             ?.addEventListener("click", () => addToCart(book));
-
 //         // Show the book details modal
 //         showModal(domElements.bookDetailsModal);
 //     }
-
 //     function addToCart(book: Book): void {
 //         const existingItem = cart.find((item) => item.id === book.book_id);
-
 //         if (existingItem) {
 //             existingItem.quantity += 1;
 //         } else {
@@ -460,15 +409,12 @@
 //         updateCartUI();
 //         showToast(`${book.title} added to cart!`);
 //     }
-
 //     function updateCartUI(): void {
 //         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 //         domElements.cartItems.textContent = totalItems.toString();
-
 //         domElements.cartDetails.innerHTML = "";
 //         domElements.cartDetails.className = "modal-body";
 //         let totalPrice = 0;
-
 //         cart.forEach((item) => {
 //             const cartItem = document.createElement("div");
 //             cartItem.className = "cart-item";
@@ -491,9 +437,7 @@
 //         <i class="fas fa-trash"></i>
 //       </button>
 //     `;
-
 //             domElements.cartDetails.appendChild(cartItem);
-
 //             cartItem
 //                 .querySelector(".decrease-quantity")
 //                 ?.addEventListener("click", () => updateCartItemQuantity(item.id, -1));
@@ -503,54 +447,43 @@
 //             cartItem
 //                 .querySelector(".remove-item")
 //                 ?.addEventListener("click", () => removeCartItem(item.id));
-
 //             totalPrice += item.price * item.quantity;
 //         });
-
 //         domElements.cartTotal.textContent = `Total: $${totalPrice.toFixed(2)}`;
 //     }
-
 //     function updateCartItemQuantity(bookId: number, change: number): void {
 //         const item = cart.find((item) => item.id === bookId);
 //         if (!item) return;
-
 //         item.quantity += change;
-
 //         if (item.quantity <= 0) {
 //             removeCartItem(bookId);
 //         } else {
 //             updateCartUI();
 //         }
 //     }
-
 //     function removeCartItem(bookId: number): void {
 //         cart = cart.filter((item) => item.id !== bookId);
 //         updateCartUI();
 //     }
-
 //     function clearCart(): void {
 //         cart = [];
 //         updateCartUI();
 //         showToast("Cart cleared!");
 //     }
-
 //     function checkout(): void {
 //         if (cart.length === 0) {
 //             showToast("Your cart is empty!");
 //             return;
 //         }
-
 //         if (!currentUser) {
 //             showToast("Please log in to proceed with checkout.");
 //             return;
 //         }
-
 //         // Simulate checkout process
 //         showToast("Checkout successful! Thank you for your purchase.");
 //         clearCart();
 //         closeCartModal();
 //     }
-
 //     // Wishlist functionality
 //     function toggleWishlist(event: Event, bookId: number): void {
 //         event.preventDefault();
@@ -558,15 +491,12 @@
 //             showToast("Please log in to add to wishlist.");
 //             return;
 //         }
-
 //         // Simulate wishlist toggle
 //         showToast("Added to wishlist!");
 //     }
-
 //     // Pagination
 //     function updatePagination(): void {
 //         domElements.pagination.innerHTML = "";
-
 //         for (let i = 1; i <= totalPages; i++) {
 //             const pageButton = document.createElement("button");
 //             pageButton.className = `btn ${i === currentPage ? "active" : ""}`;
@@ -575,35 +505,28 @@
 //                 currentPage = i;
 //                 fetchBooks(currentPage);
 //             });
-
 //             domElements.pagination.appendChild(pageButton);
 //         }
 //     }
-
 //     // Modal functions
 //     function showModal(modal: HTMLElement): void {
 //         modal.style.display = "flex";
 //     }
-
 //     function closeModal(modal: HTMLElement): void {
 //         modal.style.display = "none";
 //     }
 //     function showProfileModal(): void {
 //         showModal(domElements.profileModal);
 //     }
-
 //     function closeProfileModal(): void {
 //         closeModal(domElements.profileModal);
 //     }
-
 //     function showCartModal(): void {
 //         showModal(domElements.cartModal);
 //     }
-
 //     function closeCartModal(): void {
 //         closeModal(domElements.cartModal);
 //     }
-
 //     // Toast notifications
 //     function showToast(
 //         message: string,
@@ -612,31 +535,24 @@
 //         const toast = document.createElement("div");
 //         toast.className = `toast ${type}`;
 //         toast.textContent = message;
-
 //         domElements.toastContainer.appendChild(toast);
-
 //         setTimeout(() => {
 //             toast.remove();
 //         }, 3000);
 //     }
-
 //     // Loading and no results
 //     function showLoading(): void {
 //         domElements.loadingIndicator.style.display = "flex";
 //     }
-
 //     function hideLoading(): void {
 //         domElements.loadingIndicator.style.display = "none";
 //     }
-
 //     function showNoResults(): void {
 //         domElements.noResults.style.display = "flex";
 //     }
-
 //     function hideNoResults(): void {
 //         domElements.noResults.style.display = "none";
 //     }
-
 //     // Event listeners
 //     function attachEventListeners(): void {
 //         // Search and filter
@@ -644,25 +560,21 @@
 //             currentFilters.search = domElements.searchInput.value;
 //             fetchBooks();
 //         });
-
 //         domElements.applyFilters.addEventListener("click", () => {
 //             currentFilters.genre = domElements.genreFilter.value;
 //             currentFilters.sortBy = domElements.sortBy.value;
 //             fetchBooks();
 //         });
-
 //         domElements.resetFilters.addEventListener("click", () => {
 //             currentFilters = {};
 //             domElements.genreFilter.value = "";
 //             domElements.sortBy.value = "title";
 //             fetchBooks();
 //         });
-
 //         // Cart
 //         domElements.cartBtn.addEventListener("click", showCartModal);
 //         domElements.clearCartBtn.addEventListener("click", clearCart);
 //         domElements.checkoutBtn.addEventListener("click", checkout);
-
 //         // Auth
 //         domElements.logoutBtn?.addEventListener("click", (e) => {
 //             e.preventDefault();
@@ -670,7 +582,6 @@
 //             console.log("This is the user", currentUser);
 //             logout();
 //         });
-
 //         // Close modals
 //         document.querySelectorAll(".close").forEach((closeBtn) => {
 //             closeBtn.addEventListener("click", () => {
@@ -679,7 +590,6 @@
 //             });
 //         });
 //     }
-
 //     // Initialize app
 //     async function init(): Promise<void> {
 //         await fetchCurrentUser(); // Changed from getCurrentUser() to fetchCurrentUser()
@@ -689,9 +599,9 @@
 //         attachEventListeners();
 //         updateUIForLoggedInUser();
 //     }
-
 //     // Start the app
 //     document.addEventListener("DOMContentLoaded", () => {
 //         init();
 //     });
 // }
+//# sourceMappingURL=cart.js.map

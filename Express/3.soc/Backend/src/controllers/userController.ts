@@ -1,138 +1,123 @@
-import asyncHandler from "../middlewares/asyncHandler";
 import { Request, Response } from "express";
 import pool from "../db/db.config";
-import { User } from "../utils/interface";
-import { UserRequest } from "../utils/interface";
+import asyncHandler from "../middleware/asyncHandler";
+import { UserRequest } from "@app/utils/types/userTypes";
+import bcrypt from "bcryptjs";
 
-//ensure only admin can do this
-export const getUserById = asyncHandler(
-  async (req: UserRequest, res: Response) => {
-    const { id } = (req as unknown as Request).params;
-    try {
-      if (!req.user) {
-        res.status(401).json({ message: "Not Authorized" });
-        return;
-      }
-      if (req.user.role_id !== 1) {
-        res.status(403).json({ message: "Only the Admin can view the user" });
-        return;
-      }
-      const result = await pool.query<User>(
-        "SELECT * FROM public.users WHERE user_id = $1",
-        [id]
-      );
-      if (result.rows.length > 0) {
-        res.status(201).json(result.rows[0]);
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
-    } catch (err) {
-      console.error("Error getting the user:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-export const getUsers = asyncHandler(
-  async (req: UserRequest, res: Response) => {
-    try {
-      if (!req.user) {
-        res.status(401).json({ message: "Not Authorized" });
-        return;
-      }
-      if (req.user.role_id !== 1) {
-        res.status(403).json({ message: "Only the Admin can view the user" });
-        return;
-      }
-      const result = await pool.query<User>(
-        "SELECT * FROM public.users ORDER BY user_id ASC"
-      );
-      if (result.rows.length > 0) {
-        res.json(result.rows);
-      } else {
-        res.status(404).json({ message: "User not found" });
-      }
-    } catch (err) {
-      console.error("Error geting users", err);
-      res.status(500).json({ message: "Internal Server error" });
-    }
-  }
-);
-// export const createUser = asyncHandler(async (req: Request, res: Response) => {
-//   const { name, email, password, role_id } = req.body;
-//   try {
-//     await pool.query(
-//       `INSERT INTO public.users (name, email, password, role_id)
-//        VALUES ($1, $2, $3, $4)`,
-//       [name.toUpperCase(), email, password, role_id]
-//     );
-//     res.status(201).json({ message: "User created successfully" });
-//   } catch (err) {
-//     console.log("User couldn't be created", err);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-// export const updateUser = asyncHandler(async (req: Request, res: Response) => {
-//   const { user_id } = req.params;
-//   const { name, email, password, role_id } = req.body;
-//   try {
-//     await pool.query(
-//       `UPDATE public.users SET name = $1, email = $2, password = $3, role_id = $4 WHERE user_id = $5`,
-//       [name, email, password, role_id, user_id]
-//     );
-//     res.json({ message: "User updated successfully" });
-//   } catch (err) {
-//     console.log("Error updating user", err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-// export const partiallyUpdateUser = asyncHandler(
-//   async (req: Request, res: Response) => {
+// //delete user
+// export const deleteUser = asyncHandler(  async (req: Request, res: Response) => {
 //     try {
-//       const { user_id } = req.params;
-//       const updates = req.body;
-//       let query = "UPDATE public.users SET ";
-//       const values: any[] = [];
-//       let index = 1;
+//         const { user_id } = req.params
 
-//       for (const key in updates) {
-//         if (updates.hasOwnProperty(key)) {
-//           query += `${key} = $${index}, `;
-//           values.push(updates[key]);
-//           index++;
+//         const checkUser = await pool.query("SELECT * FROM public.users WHERE user_id = $1", [user_id])
+//         if (checkUser.rows.length === 0) {
+//             res.status(400).json({ message: "User not found" });
+//             return
 //         }
-//       }
+//         await pool.query("DELETE FROM public.users WHERE user_id = $1", [user_id]);
+//         res.json({ message: "User deleted successful" });
 
-//       query = query.slice(0, -2);
-//       query += ` WHERE user_id = $${index}`;
-//       values.push(user_id);
-
-//       await pool.query(query, values);
-//       res.json({ message: "Book partially updated successfully" });
-//     } catch (err) {
-//       res.status(500).json({ error: "Internal server error" });
+//     } catch (error) {
+//         console.error("Error creating user:", error);
+//         res.status(500).json({ message: "Internal server error" });
 //     }
-//   }
-// );
+// })
+
+//Get All users
+export const getUsers = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM public.users ORDER BY user_id ASC "
+    );
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+//Get single user
+export const getUserById = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const result = await pool.query(
+      "SELECT * FROM public.users WHERE user_id = $1",
+      [user_id]
+    );
+    if (result.rows.length === 0) {
+      res.status(400).json({ message: "User not found" });
+      return;
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+export const updateUser = asyncHandler(
+  async (req: UserRequest, res: Response) => {
+    try {
+      const { user_id } = req.params;
+      const { email, password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      // Check if user is authorized (admin )
+      if (!req.user || req.user.role_id !== 1) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to update users" });
+      }
+
+      const userExists = await pool.query(
+        "SELECT * FROM users WHERE user_id = $1",
+        [user_id]
+      );
+      if (userExists.rows.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const result = await pool.query(
+        "UPDATE users SET  email=$1,password=$2 WHERE user_id=$3 RETURNING *",
+        [email, hashedPassword, user_id]
+      );
+
+      res.status(200).json({
+        message: "User updated successfully",
+        book: result.rows[0],
+      });
+    } catch (error) {
+      console.error("Error updating User:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 export const deleteUser = asyncHandler(
   async (req: UserRequest, res: Response) => {
     try {
-      if (!req.user) {
-        res.status(401).json({ message: "Not Authorized" });
-        return;
+      const { user_id } = req.params;
+
+      // Check if user is authorized (admin )
+      if (!req.user || req.user.role_id !== 1) {
+        return res
+          .status(403)
+          .json({ message: "Not authorized to delete Users" });
       }
-      const { id } = (req as unknown as Request).params;
-      if (req.user.role_id !== 1) {
-        res.status(403).json({
-          message: "Access denied:  Admins can delete users",
-        });
-        console.log(id);
-        return;
+
+      const userExists = await pool.query(
+        "SELECT * FROM users WHERE user_id = $1",
+        [user_id]
+      );
+      if (userExists.rows.length === 0) {
+        return res.status(404).json({ message: "User not found" });
       }
-      await pool.query("DELETE FROM public.users WHERE user_id = $1", [id]);
-      res.json({ message: "User deleted successfully" });
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
+
+      await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+
+      res.status(200).json({ message: "User deleted successfully😊😊" });
+    } catch (error) {
+      console.error("Error deleting user😢😢:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 );
