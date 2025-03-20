@@ -10,10 +10,21 @@ export const authenticateToken = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
+  let token = authHeader && authHeader.split(" ")[1];
+  //trying to get token from Authorization Header
+  if (
+    (req.headers as any).authorization &&
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+  //get the token from cookies
+  if (!token && req.cookies?.access_token) {
+    token = req.cookies.access_token;
+  }
   if (!token) {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized,no token" });
     return;
   }
 

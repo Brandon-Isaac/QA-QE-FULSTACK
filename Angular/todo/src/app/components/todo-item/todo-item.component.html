@@ -1,0 +1,37 @@
+<div
+  class="todo-item"
+  [ngClass]="{
+    'todo-item-detailed': detailed,
+    'priority-high': todo.priority === 'high',
+    'priority-medium': todo.priority === 'medium',
+    'priority-low': todo.priority === 'low'
+  }"
+>
+  <div class="todo-header">
+    <h3>{{ todo.title }}</h3>
+    <span class="priority-badge">{{ todo.priority }}</span>
+  </div>
+
+  <div *ngIf="!detailed" class="todo-summary">
+    <div class="todo-dates">
+      <span>Created: {{ todo.createdAt | date : "short" }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="detailed" class="todo-details">
+    <p class="description">
+      {{ todo.description || "No description provided." }}
+    </p>
+
+    <div class="todo-dates">
+      <div>
+        <strong>Created:</strong> {{ todo.createdAt | date : "medium" }}
+      </div>
+      <div><strong>Due Date:</strong> {{ todo.dueDate | date : "medium" }}</div>
+    </div>
+
+    <div class="todo-status">
+      <strong>Status:</strong> {{ todo.completed ? "Completed" : "Pending" }}
+    </div>
+  </div>
+</div>

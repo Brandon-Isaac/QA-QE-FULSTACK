@@ -1,788 +1,608 @@
+// Clean up the auth functionality to prevent redundancy
+
 // Types and Interfaces
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  genre: string;
-  year: number;
-  pages: number;
-  price: number;
-  description: string;
-  image: string;
-  publisher: string;
-}
-
-interface CartItem {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "user" | "admin";
-}
-
 interface AuthResponse {
+  message: string;
+  accessToken?: string;
   user: User;
   token: string;
 }
+
+interface User {
+  user_id: number;
+  user_name: string;
+  email: string;
+  role_id: number;
+}
+
+interface LoginData {
+  email: string;
+  password: string;
+  role: string;
+}
+
+interface SignupData {
+  name: string;
+  email: string;
+  password: string;
+  role_id: number;
+}
+
+// Role mappings
+const ROLE_MAP: Record<string, number> = {
+  admin: 1,
+  librarian: 2,
+  borrower: 3,
+};
 
 // API URL
 const API_URL = "http://localhost:3000";
 
 // Global state
-let books: Book[] = [];
-let cart: CartItem[] = [];
 let currentUser: User | null = null;
 let token: string | null = null;
-let isEditMode = false;
-let currentPage = 1;
-let totalPages = 1;
-let booksPerPage = 8;
-let currentFilters: Record<string, any> = {};
-
-// DOM Elements
-const domElements = {
-  bookList: document.getElementById("bookList") as HTMLDivElement,
-  searchInput: document.getElementById("searchInput") as HTMLInputElement,
-  searchBtn: document.getElementById("searchBtn") as HTMLButtonElement,
-  genreFilter: document.getElementById("genreFilter") as HTMLSelectElement,
-  sortBy: document.getElementById("sortBy") as HTMLSelectElement,
-  orderBy: document.getElementById("orderBy") as HTMLSelectElement,
-  minPrice: document.getElementById("minPrice") as HTMLInputElement,
-  maxPrice: document.getElementById("maxPrice") as HTMLInputElement,
-  applyFilters: document.getElementById("applyFilters") as HTMLButtonElement,
-  resetFilters: document.getElementById("resetFilters") as HTMLButtonElement,
-  cartItems: document.getElementById("cartItems") as HTMLSpanElement,
-  cartBtn: document.getElementById("cartBtn") as HTMLButtonElement,
-  cartModal: document.getElementById("cartModal") as HTMLDivElement,
-  cartDetails: document.getElementById("cartDetails") as HTMLDivElement,
-  cartTotal: document.getElementById("cartTotal") as HTMLParagraphElement,
-  clearCartBtn: document.getElementById("clearCartBtn") as HTMLButtonElement,
-  checkoutBtn: document.getElementById("checkoutBtn") as HTMLButtonElement,
-  bookModal: document.getElementById("bookModal") as HTMLDivElement,
-  bookForm: document.getElementById("bookForm") as HTMLFormElement,
-  bookId: document.getElementById("bookId") as HTMLInputElement,
-  bookModalTitle: document.getElementById(
-    "bookModalTitle"
-  ) as HTMLHeadingElement,
-  addBookBtn: document.getElementById("addBookBtn") as HTMLButtonElement,
-  manageBooks: document.getElementById("manageBooks") as HTMLButtonElement,
-  adminControls: document.getElementById("adminControls") as HTMLDivElement,
-  loginBtn: document.getElementById("loginBtn") as HTMLButtonElement,
-  signupBtn: document.getElementById("signupBtn") as HTMLButtonElement,
-  authButtons: document.getElementById("authButtons") as HTMLDivElement,
-  loginModal: document.getElementById("loginModal") as HTMLDivElement,
-  signupModal: document.getElementById("signupModal") as HTMLDivElement,
-  profileModal: document.getElementById("profileModal") as HTMLDivElement,
-  loginForm: document.getElementById("loginForm") as HTMLFormElement,
-  signupForm: document.getElementById("signupForm") as HTMLFormElement,
-  switchToLogin: document.getElementById("switchToLogin") as HTMLAnchorElement,
-  switchToSignup: document.getElementById(
-    "switchToSignup"
-  ) as HTMLAnchorElement,
-  userSection: document.getElementById("userSection") as HTMLDivElement,
-  profileName: document.getElementById("profileName") as HTMLHeadingElement,
-  profileEmail: document.getElementById("profileEmail") as HTMLParagraphElement,
-  userRole: document.getElementById("userRole") as HTMLSpanElement,
-  bookDetailsModal: document.getElementById(
-    "bookDetailsModal"
-  ) as HTMLDivElement,
-  bookDetailsContent: document.getElementById(
-    "bookDetailsContent"
-  ) as HTMLDivElement,
-  loadingIndicator: document.getElementById(
-    "loadingIndicator"
-  ) as HTMLDivElement,
-  noResults: document.getElementById("noResults") as HTMLDivElement,
-  pagination: document.getElementById("pagination") as HTMLDivElement,
-  clearFiltersBtn: document.getElementById(
-    "clearFiltersBtn"
-  ) as HTMLButtonElement,
-  loginError: document.getElementById("loginError") as HTMLDivElement,
-  signupError: document.getElementById("signupError") as HTMLDivElement,
-  toastContainer: document.getElementById("toastContainer") as HTMLDivElement,
-};
 
 // Auth functions
-async function checkAuth(): Promise<void> {
-  // Check if token exists in local storage
-  token = localStorage.getItem("token");
-  if (!token) return;
+// ---------------------------------------
 
+// Check if user is authenticated
+function isAuthenticated(): boolean {
+  return localStorage.getItem("token") !== null;
+}
+
+// Get current user from local storage
+function getCurrentUser(): User | null {
+  const userJson = localStorage.getItem("user");
+  return userJson ? JSON.parse(userJson) : null;
+}
+
+// Save user credentials for "Remember me" functionality
+function saveUserCredentials(email: string): void {
+  localStorage.setItem("rememberedUser", email);
+}
+
+// Function to fetch the current user profile
+async function fetchCurrentUser(): Promise<boolean> {
   try {
+    // Get token from localStorage
+    const storedToken = localStorage.getItem("token");
+    console.log(storedToken);
+    if (!storedToken) {
+      return false;
+    }
+
+    token = storedToken;
+
     const response = await fetch(`${API_URL}/me`, {
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
-      throw new Error("Authentication failed");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return false;
     }
 
-    const user = await response.json();
-    currentUser = user;
+    const userData = await response.json();
+
+    // Update current user data
+    currentUser = {
+      user_id: userData.user.userId,
+      user_name: userData.user.name || "User",
+      email: userData.user.email || "",
+      role_id: userData.user.roleId,
+    };
+
+    // Save user data to localStorage
+    localStorage.setItem("user", JSON.stringify(currentUser));
+
+    // Update UI
     updateUIForLoggedInUser();
+    return true;
   } catch (error) {
-    console.error("Auth check failed:", error);
-    logout();
+    console.error("Getting current user failed:", error);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return false;
   }
 }
 
-async function login(email: string, password: string): Promise<boolean> {
+// Function to handle login
+async function handleLogin(e: Event): Promise<void> {
+  e.preventDefault();
+
+  const loginError = document.getElementById("loginError");
+  const emailInput = document.getElementById("loginEmail") as HTMLInputElement;
+  const passwordInput = document.getElementById(
+    "loginPassword"
+  ) as HTMLInputElement;
+  const rememberMeCheckbox = document.getElementById(
+    "rememberMe"
+  ) as HTMLInputElement;
+  const roleRadios = document.querySelectorAll(
+    'input[name="userRole"]'
+  ) as NodeListOf<HTMLInputElement>;
+
+  let selectedRole = "borrower"; // Default
+  roleRadios.forEach((radio) => {
+    if (radio.checked) {
+      selectedRole = radio.value;
+    }
+  });
+
+  const loginData: LoginData = {
+    email: emailInput.value,
+    password: passwordInput.value,
+    role: selectedRole,
+  };
+
   try {
-    domElements.loginError.textContent = "";
+    if (loginError) {
+      loginError.textContent = "";
+      loginError.style.display = "none";
+    }
+
+    // Show loading indicator
+    const loginButton = document.querySelector(
+      '#loginForm button[type="submit"]'
+    ) as HTMLButtonElement;
+    if (loginButton) {
+      loginButton.disabled = true;
+      loginButton.textContent = "Logging in...";
+    }
 
     const response = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email: loginData.email,
+        password: loginData.password,
+      }),
     });
 
+    const data: AuthResponse = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed");
+      throw new Error(data.message || "Login failed");
     }
 
-    const authData: AuthResponse = await response.json();
-    token = authData.token;
-    currentUser = authData.user;
+    // Check if user role matches selected role
+    if (
+      data.user &&
+      data.user.role_id !== ROLE_MAP[selectedRole as keyof typeof ROLE_MAP]
+    ) {
+      throw new Error(
+        `You don't have ${selectedRole} privileges. Please select the correct role.`
+      );
+    }
 
-    // Save token to local storage
-    localStorage.setItem("token", token);
+    // Handle successful login
+    if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+      saveUserCredentials(loginData.email);
+    }
 
-    updateUIForLoggedInUser();
-    closeLoginModal();
-    return true;
-  } catch (error) {
-    console.error("Login failed:", error);
-    domElements.loginError.textContent =
-      error instanceof Error ? error.message : "Login failed";
-    return false;
+    // Save token and user info
+    const userToken = data.accessToken || data.token;
+    if (userToken) {
+      localStorage.setItem("token", userToken);
+      token = userToken;
+    }
+
+    // Save user info
+    if (data.user) {
+      currentUser = data.user;
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
+
+    // Redirect to home page
+    window.location.href = "/home.html";
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    displayError(loginError, errorMessage);
+
+    // Reset login button
+    const loginButton = document.querySelector(
+      '#loginForm button[type="submit"]'
+    ) as HTMLButtonElement;
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = "Login";
+    }
   }
 }
 
-async function signup(
-  name: string,
-  email: string,
-  password: string
-): Promise<boolean> {
+// Function to handle signup
+async function handleSignup(e: Event): Promise<void> {
+  e.preventDefault();
+
+  const signupError = document.getElementById("signupError");
+  const nameInput = document.getElementById("signupName") as HTMLInputElement;
+  const emailInput = document.getElementById("signupEmail") as HTMLInputElement;
+  const passwordInput = document.getElementById(
+    "signupPassword"
+  ) as HTMLInputElement;
+  const confirmPasswordInput = document.getElementById(
+    "confirmPassword"
+  ) as HTMLInputElement;
+  const agreeTermsCheckbox = document.getElementById(
+    "agreeTerms"
+  ) as HTMLInputElement;
+
+  // Validate form inputs
+  if (passwordInput.value !== confirmPasswordInput.value) {
+    displayError(signupError, "Passwords do not match");
+    return;
+  }
+
+  if (!agreeTermsCheckbox.checked) {
+    displayError(
+      signupError,
+      "You must agree to the Terms of Service and Privacy Policy"
+    );
+    return;
+  }
+
+  // Determine role ID (only borrower can register directly)
+  const role_id = ROLE_MAP.borrower;
+
+  const signupData: SignupData = {
+    name: nameInput.value,
+    email: emailInput.value,
+    password: passwordInput.value,
+    role_id: role_id,
+  };
+
   try {
-    domElements.signupError.textContent = "";
+    if (signupError) {
+      signupError.textContent = "";
+      signupError.style.display = "none";
+    }
+
+    // Show loading indicator
+    const signupButton = document.querySelector(
+      '#signupForm button[type="submit"]'
+    ) as HTMLButtonElement;
+    if (signupButton) {
+      signupButton.disabled = true;
+      signupButton.textContent = "Creating Account...";
+    }
 
     const response = await fetch(`${API_URL}/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(signupData),
     });
 
+    const data: AuthResponse = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Signup failed");
+      throw new Error(data.message || "Registration failed");
     }
 
-    const authData: AuthResponse = await response.json();
-    token = authData.token;
-    currentUser = authData.user;
+    // Handle successful registration
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      token = data.token;
+    }
 
-    // Save token to local storage
-    localStorage.setItem("token", token);
+    if (data.user) {
+      currentUser = data.user;
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
 
-    updateUIForLoggedInUser();
-    closeSignupModal();
-    return true;
-  } catch (error) {
-    console.error("Signup failed:", error);
-    domElements.signupError.textContent =
-      error instanceof Error ? error.message : "Signup failed";
-    return false;
+    // Show success message and redirect
+    showToast("Account created successfully! Redirecting to home page...");
+    setTimeout(() => {
+      window.location.href = "/home.html";
+    }, 1500);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    displayError(signupError, errorMessage);
+
+    // Reset signup button
+    const signupButton = document.querySelector(
+      '#signupForm button[type="submit"]'
+    ) as HTMLButtonElement;
+    if (signupButton) {
+      signupButton.disabled = false;
+      signupButton.textContent = "Sign Up";
+    }
   }
 }
 
+// Function to logout
 function logout(): void {
+  // Clear user data from memory
   currentUser = null;
   token = null;
   localStorage.removeItem("token");
-  updateUIForLoggedOutUser();
-}
+  localStorage.removeItem("user");
 
-function updateUIForLoggedInUser(): void {
-  if (!currentUser) return;
-
-  // Update navbar
-  domElements.authButtons.style.display = "none";
-  domElements.userSection.innerHTML = `
-      <div class="user-profile" id="userProfileButton">
-        <div class="user-avatar">
-          <i class="fas fa-user-circle"></i>
-        </div>
-        <div class="user-info">
-          <p class="user-name">${currentUser.name}</p>
-          <p class="user-email">${currentUser.email}</p>
-        </div>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-      <div class="user-dropdown" id="userDropdown">
-        <div class="dropdown-item" id="viewProfileBtn">
-          <i class="fas fa-user"></i> Profile
-        </div>
-        <div class="dropdown-item">
-          <i class="fas fa-bookmark"></i> My Wishlist
-        </div>
-        <div class="dropdown-item">
-          <i class="fas fa-shopping-bag"></i> Orders
-        </div>
-        ${
-          currentUser.role === "admin"
-            ? `
-          <div class="dropdown-item admin-item">
-            <i class="fas fa-cog"></i> Admin Panel
-          </div>
-        `
-            : ""
-        }
-        <div class="dropdown-divider"></div>
-        <div class="dropdown-item" id="logoutBtn">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </div>
-      </div>
-    `;
-
-  // Show admin controls if user is admin
-  if (currentUser.role === "admin") {
-    domElements.adminControls.style.display = "block";
-  }
-
-  // Add event listeners for new elements
-  document
-    .getElementById("userProfileButton")
-    ?.addEventListener("click", toggleUserDropdown);
-  document
-    .getElementById("viewProfileBtn")
-    ?.addEventListener("click", showProfileModal);
-  document.getElementById("logoutBtn")?.addEventListener("click", logout);
-
-  // Update profile modal
-  domElements.profileName.textContent = currentUser.name;
-  domElements.profileEmail.textContent = currentUser.email;
-  domElements.userRole.textContent =
-    currentUser.role === "admin" ? "Administrator" : "Member";
-}
-
-function updateUIForLoggedOutUser(): void {
-  domElements.authButtons.style.display = "flex";
-  domElements.userSection.innerHTML = `
-      <div class="auth-buttons" id="authButtons">
-        <button id="loginBtn" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Login</button>
-        <button id="signupBtn" class="btn"><i class="fas fa-user-plus"></i> Sign Up</button>
-      </div>
-    `;
-
-  // Hide admin controls
-  domElements.adminControls.style.display = "none";
-
-  // Reattach event listeners
-  document
-    .getElementById("loginBtn")
-    ?.addEventListener("click", showLoginModal);
-  document
-    .getElementById("signupBtn")
-    ?.addEventListener("click", showSignupModal);
-}
-
-function toggleUserDropdown(): void {
-  const dropdown = document.getElementById("userDropdown");
-  if (dropdown) {
-    dropdown.classList.toggle("active");
-  }
-}
-
-// Book CRUD operations
-async function fetchBooks(page: number = 1): Promise<void> {
-  try {
-    showLoading();
-
-    const queryParams = new URLSearchParams({
-      ...currentFilters,
-      _page: page.toString(),
-      _limit: booksPerPage.toString(),
+  // Call your logout endpoint
+  fetch(`${API_URL}/logout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // Include cookies if you're using cookie-based auth
+  })
+    .then(() => {
+      // Redirect user to index page
+      window.location.href = "http://localhost:5173/";
+    })
+    .catch((error) => {
+      console.error("Logout error:", error);
+      alert("Logout failed. Please try again.");
     });
+}
 
-    const url = `${API_URL}/books?${queryParams}`;
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch books");
-
-    const totalCount = response.headers.get("X-Total-Count");
-    totalPages = totalCount
-      ? Math.ceil(parseInt(totalCount) / booksPerPage)
-      : 1;
-
-    books = await response.json();
-
-    hideLoading();
-    displayBooks();
-    updatePagination();
-  } catch (error) {
-    console.error("Error fetching books:", error);
-    hideLoading();
-    showNoResults();
+// Function to display error messages
+function displayError(element: HTMLElement | null, message: string): void {
+  if (element) {
+    element.textContent = message;
+    element.style.display = "block";
   }
 }
 
-function displayBooks(): void {
-  if (!domElements.bookList) return;
-
-  domElements.bookList.innerHTML = "";
-
-  if (books.length === 0) {
-    showNoResults();
-    return;
-  }
-
-  hideNoResults();
-
-  books.forEach((book) => {
-    const bookCard = document.createElement("div");
-    bookCard.className = "book-card";
-    // bookCard.dataset.id = book.id;
-
-    const coverImg =
-      book.image && book.image.length > 0 ? book.image : "Images/book.png";
-
-    bookCard.innerHTML = `
-        <div class="book-cover">
-          <img src="${coverImg}" alt="${book.title}" onerror="this.src='Images/book.png'">
-          
-        </div>
-        <div class="book-info">
-          <h3 class="book-title">${book.title}</h3>
-          <p class="book-author">by ${book.author}</p>
-          <div class="book-meta">
-            <span class="book-genre">${book.genre}</span>
-            <span class="book-year">${book.year}</span>
-          </div>
-          <div class="book-price">$${book.price}</div>
-        </div>
-        <div class="book-actions">
-            <button class="btn-icon view-details" data-id="${book.id}">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn-icon add-to-cart" data-id="${book.id}">
-              <i class="fas fa-cart-plus"></i>
-            </button>
-            <button class="btn-icon add-to-wishlist" data-id="${book.id}">
-              <i class="far fa-heart"></i>
-            </button>
-          </div>
-      `;
-
-    domElements.bookList.appendChild(bookCard);
-
-    // Add event listeners for book actions
-    bookCard
-      .querySelector(".view-details")
-      ?.addEventListener("click", () => showBookDetails(book.id));
-    bookCard
-      .querySelector(".add-to-cart")
-      ?.addEventListener("click", () => addToCart(book));
-    bookCard
-      .querySelector(".add-to-wishlist")
-      ?.addEventListener("click", (e) => toggleWishlist(e, book.id));
-  });
-}
-
-async function populateFilters(): Promise<void> {
-  await fetchBooks();
-  const genres = new Set<string>();
-
-  books.forEach((book) => genres.add(book.genre));
-  const genreFilter = document.getElementById(
-    "genreFilter"
-  ) as HTMLSelectElement;
-  if (!genreFilter) return;
-
-  genreFilter.innerHTML = '<option value="">All Genres</option>';
-  genres.forEach((genre) => {
-    const option = document.createElement("option");
-    option.value = genre;
-    option.textContent = genre;
-    genreFilter.appendChild(option);
-  });
-}
-
-function showBookDetails(bookId: number): void {
-  const book = books.find((b) => b.id === bookId);
-  if (!book) return;
-
-  domElements.bookDetailsContent.innerHTML = `
-      <div class="book-details">
-        <div class="book-details-cover">
-          <img src="${book.image || "Images/book.png"}" alt="${
-    book.title
-  }" onerror="this.src='Images/book.png'">
-        </div>
-        <div class="book-details-info">
-          <h2>${book.title}</h2>
-          <p class="author">by ${book.author}</p>
-          <div class="book-metadata">
-            <div class="metadata-item">
-              <span class="label">Genre:</span>
-              <span class="value">${book.genre}</span>
-            </div>
-            <div class="metadata-item">
-              <span class="label">Published:</span>
-              <span class="value">${book.year}</span>
-            </div>
-            <div class="metadata-item">
-              <span class="label">Publisher:</span>
-              <span class="value">${book.publisher}</span>
-            </div>
-            <div class="metadata-item">
-              <span class="label">Pages:</span>
-              <span class="value">${book.pages}</span>
-            </div>
-          </div>
-          <div class="book-price-section">
-            <div class="price">$${book.price.toFixed(2)}</div>
-            <button class="btn add-to-cart-btn" data-id="${book.id}">
-              <i class="fas fa-cart-plus"></i> Add to Cart
-            </button>
-          </div>
-          <div class="book-description">
-            <h3>Description</h3>
-            <p>${book.description}</p>
-          </div>
-        </div>
-      </div>
-        `;
-
-  // Add event listener for the "Add to Cart" button in the details modal
-  domElements.bookDetailsContent
-    .querySelector(".add-to-cart-btn")
-    ?.addEventListener("click", () => addToCart(book));
-
-  // Show the book details modal
-  showModal(domElements.bookDetailsModal);
-}
-
-function addToCart(book: Book): void {
-  const existingItem = cart.find((item) => item.id === book.id);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      price: book.price,
-      quantity: 1,
-      image: book.image,
-    });
-  }
-
-  updateCartUI();
-  showToast(`${book.title} added to cart!`);
-}
-
-function updateCartUI(): void {
-  // Update cart badge
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  domElements.cartItems.textContent = totalItems.toString();
-
-  // Update cart modal content
-  domElements.cartDetails.innerHTML = "";
-  let totalPrice = 0;
-
-  cart.forEach((item) => {
-    const cartItem = document.createElement("div");
-    cartItem.className = "cart-item";
-    cartItem.innerHTML = `
-        <div class="cart-item-image">
-          <img src="${item.image || "Images/book.png"}" alt="${
-      item.title
-    }" onerror="this.src='Images/book.png'">
-        </div>
-        <div class="cart-item-info">
-          <h4>${item.title}</h4>
-          <p>by ${item.author}</p>
-          <div class="cart-item-price">$${item.price.toFixed(2)}</div>
-          <div class="cart-item-quantity">
-            <button class="btn-icon decrease-quantity" data-id="${item.id}">
-              <i class="fas fa-minus"></i>
-            </button>
-            <span>${item.quantity}</span>
-            <button class="btn-icon increase-quantity" data-id="${item.id}">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-        </div>
-        <button class="btn-icon remove-item" data-id="${item.id}">
-          <i class="fas fa-trash"></i>
-        </button>
-      `;
-
-    domElements.cartDetails.appendChild(cartItem);
-
-    // Add event listeners for quantity controls
-    cartItem
-      .querySelector(".decrease-quantity")
-      ?.addEventListener("click", () => updateCartItemQuantity(item.id, -1));
-    cartItem
-      .querySelector(".increase-quantity")
-      ?.addEventListener("click", () => updateCartItemQuantity(item.id, 1));
-    cartItem
-      .querySelector(".remove-item")
-      ?.addEventListener("click", () => removeCartItem(item.id));
-
-    totalPrice += item.price * item.quantity;
-  });
-
-  // Update total price
-  domElements.cartTotal.textContent = `Total: $${totalPrice.toFixed(2)}`;
-}
-
-function updateCartItemQuantity(bookId: number, change: number): void {
-  const item = cart.find((item) => item.id === bookId);
-  if (!item) return;
-
-  item.quantity += change;
-
-  if (item.quantity <= 0) {
-    removeCartItem(bookId);
-  } else {
-    updateCartUI();
-  }
-}
-
-function removeCartItem(bookId: number): void {
-  cart = cart.filter((item) => item.id !== bookId);
-  updateCartUI();
-}
-
-function clearCart(): void {
-  cart = [];
-  updateCartUI();
-  showToast("Cart cleared!");
-}
-
-function checkout(): void {
-  if (cart.length === 0) {
-    showToast("Your cart is empty!");
-    return;
-  }
-
-  if (!currentUser) {
-    showToast("Please log in to proceed with checkout.");
-    showLoginModal();
-    return;
-  }
-
-  // Simulate checkout process
-  showToast("Checkout successful! Thank you for your purchase.");
-  clearCart();
-  closeCartModal();
-}
-
-// Wishlist functionality
-function toggleWishlist(event: Event, bookId: number): void {
-  event.preventDefault();
-  if (!currentUser) {
-    showToast("Please log in to add to wishlist.");
-    showLoginModal();
-    return;
-  }
-
-  // Simulate wishlist toggle
-  showToast("Added to wishlist!");
-}
-
-// Pagination
-function updatePagination(): void {
-  domElements.pagination.innerHTML = "";
-
-  for (let i = 1; i <= totalPages; i++) {
-    const pageButton = document.createElement("button");
-    pageButton.className = `btn ${i === currentPage ? "active" : ""}`;
-    pageButton.textContent = i.toString();
-    pageButton.addEventListener("click", () => {
-      currentPage = i;
-      fetchBooks(currentPage);
-    });
-
-    domElements.pagination.appendChild(pageButton);
-  }
-}
-
-// Modal functions
-function showModal(modal: HTMLElement): void {
-  modal.style.display = "flex";
-}
-
-function closeModal(modal: HTMLElement): void {
-  modal.style.display = "none";
-}
-
-function showLoginModal(): void {
-  showModal(domElements.loginModal);
-}
-
-function closeLoginModal(): void {
-  closeModal(domElements.loginModal);
-}
-
-function showSignupModal(): void {
-  showModal(domElements.signupModal);
-}
-
-function closeSignupModal(): void {
-  closeModal(domElements.signupModal);
-}
-
-function showProfileModal(): void {
-  showModal(domElements.profileModal);
-}
-
-function closeProfileModal(): void {
-  closeModal(domElements.profileModal);
-}
-
-function showCartModal(): void {
-  showModal(domElements.cartModal);
-}
-
-function closeCartModal(): void {
-  closeModal(domElements.cartModal);
-}
-
-// Toast notifications
+// Function to show toast notification
 function showToast(
   message: string,
   type: "success" | "error" | "info" = "info"
 ): void {
+  const toastContainer = document.getElementById("toastContainer");
+  if (!toastContainer) return;
+
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = message;
 
-  domElements.toastContainer.appendChild(toast);
+  toastContainer.appendChild(toast);
 
   setTimeout(() => {
     toast.remove();
   }, 3000);
 }
 
-// Loading and no results
-function showLoading(): void {
-  domElements.loadingIndicator.style.display = "flex";
+// Function to update UI for logged in user
+function updateUIForLoggedInUser(): void {
+  const profileSection = document.getElementById("profile-section");
+  const adminControls = document.getElementById("adminControls");
+  const loginBtn = document.getElementById("loginBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (!currentUser) return;
+
+  // Update profile section if it exists
+  if (profileSection) {
+    profileSection.innerHTML = `
+          <div class="user-profile">
+            <div class="user-image">
+              <img src="./Images/91.jpg" alt="user image" />
+            </div>
+            <div class="user-info" id="details">
+              <h4 id="profileName"></h4>
+              <p id="userRole"></p>
+            </div>
+          </div>
+    `;
+  }
+
+  // Show admin controls if user is admin
+  if (adminControls) {
+    adminControls.style.display = currentUser.role_id === 1 ? "block" : "none";
+  }
+
+  // Update login/signup/logout buttons
+  if (loginBtn) loginBtn.style.display = "none";
+  if (signupBtn) signupBtn.style.display = "none";
+  if (logoutBtn) logoutBtn.style.display = "block";
+
+  // Update profile modal if it exists
+  const profileName = document.getElementById("profileName");
+  const profileEmail = document.getElementById("profileEmail");
+  const userRole = document.getElementById("userRole");
+
+  if (profileName) profileName.textContent = currentUser.user_name || "User";
+  if (profileEmail) profileEmail.textContent = currentUser.email || "";
+  if (userRole) {
+    userRole.textContent =
+      currentUser.role_id === 1
+        ? "Admin"
+        : currentUser.role_id === 2
+        ? "Librarian"
+        : "Borrower";
+  }
 }
 
-function hideLoading(): void {
-  domElements.loadingIndicator.style.display = "none";
+// Function to protect pages that require authentication
+function protectPage(): void {
+  const isLoggedIn = isAuthenticated();
+  const currentPath = window.location.pathname;
+
+  // If on home page and not logged in, redirect to index
+  if (currentPath.includes("home.html") && !isLoggedIn) {
+    window.location.href = "http://localhost:5173/";
+    return;
+  }
+
+  // If on index page and already logged in, redirect to home
+  if (currentPath === "/" || currentPath.includes("index.html")) {
+    if (isLoggedIn) {
+      // Prevent endless redirects by checking if we're coming from home
+      const referrer = document.referrer;
+      if (!referrer.includes("home.html")) {
+        window.location.href = "/home.html";
+        return;
+      }
+    }
+  }
 }
 
-function showNoResults(): void {
-  domElements.noResults.style.display = "flex";
+// Function to check for remembered user
+function checkRememberedUser(): void {
+  const rememberedUser = localStorage.getItem("rememberedUser");
+
+  if (rememberedUser) {
+    const emailInput = document.getElementById(
+      "loginEmail"
+    ) as HTMLInputElement;
+    const rememberMeCheckbox = document.getElementById(
+      "rememberMe"
+    ) as HTMLInputElement;
+
+    if (emailInput) {
+      emailInput.value = rememberedUser;
+    }
+
+    if (rememberMeCheckbox) {
+      rememberMeCheckbox.checked = true;
+    }
+  }
 }
 
-function hideNoResults(): void {
-  domElements.noResults.style.display = "none";
-}
+// Function to attach event listeners
+function attachAuthEventListeners(): void {
+  const loginForm = document.getElementById("loginForm") as HTMLFormElement;
+  const signupForm = document.getElementById("signupForm") as HTMLFormElement;
+  const loginBtn = document.getElementById("loginBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const switchToLogin = document.getElementById("switchToLogin");
+  const switchToSignup = document.getElementById("switchToSignup");
+  const loginModal = document.getElementById("loginModal");
+  const signupModal = document.getElementById("signupModal");
 
-// Event listeners
-function attachEventListeners(): void {
-  // Search and filter
-  domElements.searchBtn.addEventListener("click", () => {
-    currentFilters.search = domElements.searchInput.value;
-    fetchBooks();
-  });
+  // Login form submission
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
 
-  domElements.applyFilters.addEventListener("click", () => {
-    currentFilters.genre = domElements.genreFilter.value;
-    currentFilters.sortBy = domElements.sortBy.value;
-    currentFilters.orderBy = domElements.orderBy.value;
-    currentFilters.minPrice = domElements.minPrice.value;
-    currentFilters.maxPrice = domElements.maxPrice.value;
-    fetchBooks();
-  });
+  // Signup form submission
+  if (signupForm) {
+    signupForm.addEventListener("submit", handleSignup);
+  }
 
-  domElements.resetFilters.addEventListener("click", () => {
-    currentFilters = {};
-    domElements.genreFilter.value = "";
-    domElements.sortBy.value = "title";
-    domElements.orderBy.value = "asc";
-    domElements.minPrice.value = "";
-    domElements.maxPrice.value = "";
-    fetchBooks();
-  });
+  // Auth buttons
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      if (loginModal) loginModal.style.display = "flex";
+    });
+  }
 
-  // Cart
-  domElements.cartBtn.addEventListener("click", showCartModal);
-  domElements.clearCartBtn.addEventListener("click", clearCart);
-  domElements.checkoutBtn.addEventListener("click", checkout);
+  if (signupBtn) {
+    signupBtn.addEventListener("click", () => {
+      if (signupModal) signupModal.style.display = "flex";
+    });
+  }
 
-  // Auth
-  domElements.loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = (document.getElementById("loginEmail") as HTMLInputElement)
-      .value;
-    const password = (
-      document.getElementById("loginPassword") as HTMLInputElement
-    ).value;
-    await login(email, password);
-  });
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      logout();
+    });
+  }
 
-  domElements.signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = (document.getElementById("signupName") as HTMLInputElement)
-      .value;
-    const email = (document.getElementById("signupEmail") as HTMLInputElement)
-      .value;
-    const password = (
-      document.getElementById("signupPassword") as HTMLInputElement
-    ).value;
-    await signup(name, email, password);
-  });
+  // Switch between login and signup
+  if (switchToLogin) {
+    switchToLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (signupModal) signupModal.style.display = "none";
+      if (loginModal) loginModal.style.display = "flex";
+    });
+  }
 
-  domElements.switchToLogin.addEventListener("click", (e) => {
-    e.preventDefault();
-    closeSignupModal();
-    showLoginModal();
-  });
+  if (switchToSignup) {
+    switchToSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (loginModal) loginModal.style.display = "none";
+      if (signupModal) signupModal.style.display = "flex";
+    });
+  }
 
-  domElements.switchToSignup.addEventListener("click", (e) => {
-    e.preventDefault();
-    closeLoginModal();
-    showSignupModal();
-  });
-
-  // Close modals
+  // Close modal buttons
   document.querySelectorAll(".close").forEach((closeBtn) => {
     closeBtn.addEventListener("click", () => {
       const modal = closeBtn.closest(".modal") as HTMLElement;
-      closeModal(modal);
+      if (modal) modal.style.display = "none";
     });
   });
+
+  // Password strength meter
+  const signupPassword = document.getElementById(
+    "signupPassword"
+  ) as HTMLInputElement;
+  if (signupPassword) {
+    signupPassword.addEventListener("input", updatePasswordStrength);
+  }
 }
 
-// Initialize app
-async function init(): Promise<void> {
-  await checkAuth();
-  fetchBooks();
-  populateFilters();
-  attachEventListeners();
+// Function to update password strength
+function updatePasswordStrength(e: Event): void {
+  const passwordInput = e.target as HTMLInputElement;
+  const password = passwordInput.value;
+  const strengthMeter = document.getElementById("passwordStrength");
+  const strengthText = document.getElementById("passwordStrengthText");
+
+  if (!strengthMeter || !strengthText) return;
+
+  let strength = 0;
+
+  // Criteria for password strength
+  if (password.length >= 8) strength += 1;
+  if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+  if (password.match(/[0-9]/)) strength += 1;
+  if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+
+  // Update the strength meter
+  strengthMeter.className = "strength-meter";
+  switch (strength) {
+    case 0:
+      strengthMeter.classList.add("weak");
+      strengthText.textContent = "Weak";
+      break;
+    case 1:
+    case 2:
+      strengthMeter.classList.add("medium");
+      strengthText.textContent = "Medium";
+      break;
+    case 3:
+    case 4:
+      strengthMeter.classList.add("strong");
+      strengthText.textContent = "Strong";
+      break;
+  }
+
+  // Update width based on strength
+  strengthMeter.style.width = `${25 * strength}%`;
 }
 
-// Start the app
-init();
+// Initialize auth system
+async function initAuth(): Promise<void> {
+  // Check if page should be protected
+  protectPage();
+
+  // Try to fetch current user
+  await fetchCurrentUser();
+
+  // Check for remembered user
+  checkRememberedUser();
+
+  // Attach event listeners
+  attachAuthEventListeners();
+}
+
+// Start the auth system when the page loads
+document.addEventListener("DOMContentLoaded", () => {
+  initAuth();
+});

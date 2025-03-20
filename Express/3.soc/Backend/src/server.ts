@@ -8,13 +8,21 @@ import bookRoutes from "./routes/bookRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import userRoutes from "@app/routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
+import { checkAuth } from "./controllers/authController";
+import { authenticateToken } from "./middlewares/Auth/authenticateToken";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-app.use(cors());
+//app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: "GET, PUT,POST,PATCH,DELETE",
+    credentials: true, //allows cookies and auth headers
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -22,7 +30,8 @@ app.use(cookieParser());
 // Routes
 app.use("/books", bookRoutes);
 app.use("/users", userRoutes);
-app.use("/auth", authRoutes);
+app.use("/", authRoutes);
+
 
 // Middleware
 app.use(errorHandler);

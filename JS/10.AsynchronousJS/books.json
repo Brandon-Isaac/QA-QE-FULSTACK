@@ -10,7 +10,7 @@
       "publisher": "J.B. Lippincott & Co.",
       "description": "A novel about the serious issues of rape and racial inequality, told through theeyes of a young girl in the Deep South.",
       "image": "https://m.media-amazon.com/images/I/81gepf1eMqL.jpg",
-      "price": 1700
+      "price": 10
     },
     {
       "id": 2,
@@ -22,7 +22,7 @@
       "publisher": "Secker & Warburg",
       "description": "A dystopian novel set in a totalitarian society ruled by the Party, which has total control over every aspect of people's lives.",
       "image": "https://i.ebayimg.com/images/g/vZQAAeSwSbRnrJge/s-l500.webp",
-      "price": 3000
+      "price": 12
     },
     {
       "id": 3,
@@ -34,7 +34,7 @@
       "publisher": "Charles Scribner's Sons",
       "description": "A story of the fabulously wealthy Jay Gatsby and his love for the beautifulDaisy Buchanan.",
       "image": "https://m.media-amazon.com/images/I/81af+MCATTL.jpg",
-      "price": 2900
+      "price": 16
     },
     {
       "id": 4,
@@ -46,7 +46,7 @@
       "publisher": "T. Egerton, Whitehall",
       "description": "A romantic novel of manners that follows the character development ofElizabeth Bennet, the protagonist.",
       "image": "https://i.ebayimg.com/images/g/ikQAAOSwm8JnkrMW/s-l500.webp",
-      "price": 2700
+      "price": 27
     },
     {
       "id": 5,
@@ -58,7 +58,7 @@
       "publisher": "Little, Brown and Company",
       "description": "A story about Holden Caulfield's experiences in New York City after being expelled from prep school.",
       "image": "https://m.media-amazon.com/images/I/81OthjkJBuL.jpg",
-      "price": 1100
+      "price": 23
     },
     {
       "id": 6,
@@ -70,7 +70,7 @@
       "publisher": "George Allen & Unwin",
       "description": "A fantasy novel about the adventures of Bilbo Baggins, a hobbit, who sets out on a quest to win a share of a dragon's treasure.",
       "image": "https://m.media-amazon.com/images/I/91b0C2YNSrL.jpg",
-      "price": 2900
+      "price": 29
     },
     {
       "id": 7,
@@ -82,7 +82,7 @@
       "publisher": "Ballantine Books",
       "description": "A dystopian novel about a future society where books are banned, and 'firemen' burn any that are found.",
       "image": "https://i.ebayimg.com/images/g/v0AAAOSwxrpkfnD1/s-l500.webp",
-      "price": 1200
+      "price": 12
     },
     {
       "id": 8,
@@ -94,7 +94,7 @@
       "publisher": "Harper & Brothers",
       "description": "The story of Captain Ahab's obsessive quest to kill the white whale, Moby-Dick.",
       "image": "https://i.ebayimg.com/images/g/aEQAAOSwuYhnTx6N/s-l500.webp",
-      "price": 2100
+      "price": 21
     },
     {
       "id": 9,
@@ -106,7 +106,7 @@
       "publisher": "The Russian Messenger",
       "description": "A novel that chronicles the French invasion of Russia and the impact of theNapoleonic era on Tsarist society.",
       "image": "https://i.ebayimg.com/images/g/28AAAOSw5Alf~fcP/s-l500.webp",
-      "price": 1500
+      "price": 15
     },
     {
       "id": 10,
@@ -118,7 +118,7 @@
       "publisher": "Unknown",
       "description": "An epic poem that follows the Greek hero Odysseus on his journey home afterthe fall of Troy.",
       "image": "https://i.ebayimg.com/images/g/65oAAOSwsvFnqNgJ/s-l500.webp",
-      "price": 2500
+      "price": 25
     }
   ]
 }

@@ -1,0 +1,16 @@
+<div class="todo-list">
+  <h2>Todo List</h2>
+  <div *ngIf="todos.length === 0" class="empty-list">
+    No todos yet. Add one above!
+  </div>
+  <div *ngFor="let todo of todos" class="todo-container">
+    <app-todo-item
+      [todo]="todo"
+      [detailed]="false"
+      (click)="onSelectTodo(todo)"
+    ></app-todo-item>
+    <button class="btn-delete" (click)="onDeleteTodo(todo.id, $event)">
+      Delete
+    </button>
+  </div>
+</div>

@@ -63,7 +63,40 @@ body {
 .user-section {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+.user-profile {
+  display: flex;
+  align-items: center;
   gap: 1rem;
+  padding: 1rem;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile .user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-profile .user-info h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.user-profile .user-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #7f8c8d;
+}
+
+.user-image img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid #3498db;
 }
 
 .btn {
@@ -83,6 +116,11 @@ body {
 .btn-outline:hover {
   background-color: #3498db;
   color: #fff;
+}
+.auth-buttons {
+  position: fixed;
+  bottom: 10px;
+  z-index: 99;
 }
 
 /* Main Content */
@@ -149,10 +187,15 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: nowrap;
 }
 
 .cart-button {
   background-color: #3498db;
+  position: fixed;
+  z-index: 99;
+  top: 10px;
+  right: 10px;
   border: none;
   border-radius: 4px;
   padding: 0.5rem 1rem;
@@ -170,11 +213,19 @@ body {
   font-size: 0.8rem;
 }
 
-/* .book-grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-} */
+.cart-item-info {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+.dets {
+  display: flex;
+  flex-direction: column;
+}
+.cart-item-quantity {
+  display: flex;
+  flex-direction: column;
+}
 
 .book-grid {
   display: grid;
@@ -309,8 +360,35 @@ body {
   padding: 2rem;
   border-radius: 8px;
   max-width: 500px;
-  width: 100%;
-  position: relative;
+  width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+.modal-body {
+  padding: 1rem;
+  overflow-y: auto; /* Make the body scrollable */
+  flex-grow: 1; /* Allow the body to grow and fill available space */
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
 .modal-header {
@@ -320,13 +398,11 @@ body {
   margin-bottom: 1rem;
 }
 
-.modal-header h2 {
-  margin: 0;
-}
-
 .close {
   font-size: 1.5rem;
   cursor: pointer;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
 .close:hover {
@@ -384,4 +460,79 @@ body {
   to {
     transform: translateX(0);
   }
+}
+/* General Styles */
+
+#user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#user-info button {
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+#user-info button:hover {
+  background-color: #777;
+}
+
+main {
+  padding: 2rem;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+}
+
+/* Form Styles */
+.books {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+button[type="submit"] {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #555;
 }

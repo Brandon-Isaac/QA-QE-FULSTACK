@@ -73,30 +73,3 @@ export const protect = asyncHandler(
     }
   }
 );
-export const authenticateToken = (
-  req: UserRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  if (!process.env.JWT_SECRET) {
-    return res
-      .status(500)
-      .json({ message: "JWT_SECRET is not defined in environment variables" });
-  }
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.user = user as {
-      user_id: string;
-      name: string;
-      email: string;
-      role_id: number;
-      role_name: string;
-    };
-    next();
-  });
-};

@@ -1,0 +1,53 @@
+<div class="todo-form">
+  <h2>Add New Todo</h2>
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input
+        type="text"
+        id="title"
+        name="title"
+        [(ngModel)]="title"
+        required
+        class="form-control"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description:</label>
+      <textarea
+        id="description"
+        name="description"
+        [(ngModel)]="description"
+        class="form-control"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="priority">Priority:</label>
+      <select
+        id="priority"
+        name="priority"
+        [(ngModel)]="priority"
+        class="form-control"
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="dueDate">Due Date:</label>
+      <input
+        type="datetime-local"
+        id="dueDate"
+        name="dueDate"
+        [(ngModel)]="dueDate"
+        class="form-control"
+      />
+    </div>
+
+    <button type="submit" class="btn-submit">Add Todo</button>
+  </form>
+</div>
