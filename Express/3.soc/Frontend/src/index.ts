@@ -183,7 +183,11 @@ async function login(email: string, password: string) {
     return true;
   } catch (error) {
     console.error("Login failed:", error);
-    showNotification(`Login failed: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
     return false;
   }
 }
@@ -214,7 +218,11 @@ async function register(
     return true;
   } catch (error) {
     console.error("Registration failed:", error);
-    showNotification(`Registration failed: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
     return false;
   }
 }
@@ -638,7 +646,11 @@ async function createBook(bookData: Omit<Book, "book_id">) {
     return true;
   } catch (error) {
     console.error("Create book failed:", error);
-    showNotification(`Failed to create book: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
     return false;
   }
 }
@@ -731,7 +743,11 @@ async function editBook(bookId: number) {
         bookFormModal.style.display = "none";
       } catch (error) {
         console.error("Update book failed:", error);
-        showNotification(`Failed to update book: ${error.message}`);
+        if (error instanceof Error) {
+          showNotification(`Login failed: ${error.message}`);
+        } else {
+          showNotification("Login failed: An unknown error occurred");
+        }
       }
     };
 
@@ -776,7 +792,11 @@ async function deleteBook(bookId: number) {
     showNotification("Book deleted successfully");
   } catch (error) {
     console.error("Delete book failed:", error);
-    showNotification(`Failed to delete book: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
   }
 }
 
@@ -991,55 +1011,6 @@ function setupEventListeners() {
   });
 }
 
-// Handle book borrowing
-async function borrowBooks() {
-  if (!currentUser) {
-    showNotification("Please login to borrow books");
-    return;
-  }
-
-  if (cart.length === 0) {
-    showNotification("Your cart is empty");
-    return;
-  }
-
-  try {
-    // Prepare borrow request data
-    const borrowData = {
-      userId: currentUser.id,
-      books: cart.map((item) => ({
-        bookId: item.book.book_id,
-        quantity: item.quantity,
-      })),
-    };
-
-    const response = await fetch(`${API_BASE_URL}/api/borrows/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(borrowData),
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to borrow books");
-    }
-
-    showNotification("Books borrowed successfully!");
-    cart = [];
-    updateCartUI();
-
-    // Refresh book list to update availability
-    await fetchBooks();
-  } catch (error) {
-    console.error("Borrow books failed:", error);
-    showNotification(`Failed to borrow books: ${error.message}`);
-  }
-}
-
 // Pagination functions
 let currentPage = 1;
 const booksPerPage = 12;
@@ -1231,7 +1202,11 @@ async function fetchUsers() {
     renderUserManagementUI(users);
   } catch (error) {
     console.error("Fetch users failed:", error);
-    showNotification(`Failed to fetch users: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
   }
 }
 
@@ -1403,7 +1378,11 @@ async function editUser(userId: string) {
           await fetchUsers(); // Refresh user list
         } catch (error) {
           console.error("Update user failed:", error);
-          showNotification(`Failed to update user: ${error.message}`);
+          if (error instanceof Error) {
+            showNotification(`Login failed: ${error.message}`);
+          } else {
+            showNotification("Login failed: An unknown error occurred");
+          }
         }
       });
     }
@@ -1416,7 +1395,11 @@ async function editUser(userId: string) {
     });
   } catch (error) {
     console.error("Edit user failed:", error);
-    showNotification(`Failed to edit user: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
   }
 }
 
@@ -1450,7 +1433,11 @@ async function deleteUser(userId: string) {
     await fetchUsers(); // Refresh user list
   } catch (error) {
     console.error("Delete user failed:", error);
-    showNotification(`Failed to delete user: ${error.message}`);
+    if (error instanceof Error) {
+      showNotification(`Login failed: ${error.message}`);
+    } else {
+      showNotification("Login failed: An unknown error occurred");
+    }
   }
 }
 
