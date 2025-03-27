@@ -1,3 +1,13 @@
-<app-todo-form></app-todo-form>
-<app-todo-item></app-todo-item>
-<app-todo-list></app-todo-list>
+<div class="container">
+  <h1>Todo List Application</h1>
+  <app-todo-form (addTodo)="addTodo($event)"></app-todo-form>
+  <app-todo-list
+    [todos]="todos"
+    (selectTodo)="selectTodo($event)"
+    (deleteTodo)="deleteTodo($event)"
+  ></app-todo-list>
+  <div *ngIf="selectedTodo" class="current-todo">
+    <h2>Current Todo</h2>
+    <app-todo-item [todo]="selectedTodo" [detailed]="true"></app-todo-item>
+  </div>
+</div>

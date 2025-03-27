@@ -81,7 +81,7 @@ function checkAuthStatus() {
 function fetchUserData() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield fetch(`${API_BASE_URL}/api/user/profile`, {
+            const response = yield fetch(`${API_BASE_URL}/api/users/profile`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -241,7 +241,7 @@ function fetchBooks() {
 // Render books to the book list
 function renderBooks() {
     currentPage = 1;
-    renderPaginatedBooks();
+    //renderPaginatedBooks();
     setupPagination();
     if (!bookList)
         return;
@@ -256,7 +256,7 @@ function renderBooks() {
         bookCard.className = "book-card";
         bookCard.innerHTML = `
       <div class="book-image">
-        <img src="${book.image || "placeholder.jpg"}" alt="${book.title}">
+        <img src="${book.image || "../Images/book.png.jpg"}" alt="${book.title}">
       </div>
       <div class="book-info">
         <h3>${book.title}</h3>
@@ -516,7 +516,7 @@ function borrowBooks() {
     }
     // Here you would implement the API call to borrow books
     // For now, we'll just show a notification
-    showNotification("Books borrowed successfully! Feature coming soon.");
+    showNotification("Books borrowed successfully! ");
     cart = [];
     updateCartUI();
 }
@@ -897,7 +897,7 @@ function setupPagination() {
     prevBtn.addEventListener("click", () => {
         if (currentPage > 1) {
             currentPage--;
-            renderPaginatedBooks();
+            //renderPaginatedBooks();
             setupPagination();
         }
     });
@@ -911,7 +911,7 @@ function setupPagination() {
         pageBtn.textContent = i.toString();
         pageBtn.addEventListener("click", () => {
             currentPage = i;
-            renderPaginatedBooks();
+            // renderPaginatedBooks();
             setupPagination();
         });
         paginationContainer.appendChild(pageBtn);
@@ -924,90 +924,103 @@ function setupPagination() {
     nextBtn.addEventListener("click", () => {
         if (currentPage < totalPages) {
             currentPage++;
-            renderPaginatedBooks();
+            //renderPaginatedBooks();
             setupPagination();
         }
     });
     paginationContainer.appendChild(nextBtn);
 }
-function renderPaginatedBooks() {
-    const start = (currentPage - 1) * booksPerPage;
-    const end = start + booksPerPage;
-    const paginatedBooks = filteredBooks.slice(start, end);
-    if (!bookList)
-        return;
-    bookList.innerHTML = "";
-    if (paginatedBooks.length === 0) {
-        bookList.innerHTML =
-            '<p class="no-books">No books found matching your criteria.</p>';
-        return;
-    }
-    paginatedBooks.forEach((book) => {
-        const bookCard = document.createElement("div");
-        bookCard.className = "book-card";
-        bookCard.innerHTML = `
-    <div class="book-image">
-      <img src="${book.image || "placeholder.jpg"}" alt="${book.title}">
-    </div>
-    <div class="book-info">
-      <h3>${book.title}</h3>
-      <p><strong>Author:</strong> ${book.author}</p>
-      <p><strong>Genre:</strong> ${book.genre}</p>
-      <p><strong>Year:</strong> ${book.year}</p>
-      <p><strong>Price:</strong> $${book.price}</p>
-      ${book.available_copies !== undefined
-            ? `<p class="availability ${book.available_copies > 0 ? "in-stock" : "out-of-stock"}">
-          ${book.available_copies > 0
-                ? `Available: ${book.available_copies}/${book.total_copies}`
-                : "Out of Stock"}
-        </p>`
-            : ""}
-    </div>
-    <div class="book-actions">
-      <button class="btn view-btn" data-id="${book.book_id}">View Details</button>
-      <button class="btn add-to-cart-btn" data-id="${book.book_id}" ${book.available_copies !== undefined && book.available_copies === 0
-            ? "disabled"
-            : ""}>
-        ${book.available_copies !== undefined && book.available_copies === 0
-            ? "Out of Stock"
-            : "Add to Cart"}
-      </button>
-      ${currentUser && (currentUser.role_id === 1 || currentUser.role_id === 2)
-            ? `<button class="btn edit-btn" data-id="${book.book_id}">Edit</button>
-         <button class="btn delete-btn" data-id="${book.book_id}">Delete</button>`
-            : ""}
-    </div>
-  `;
-        bookList.appendChild(bookCard);
-    });
-    // Add event listeners to action buttons
-    document.querySelectorAll(".view-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const bookId = e.currentTarget.getAttribute("data-id");
-            viewBookDetails(Number(bookId));
-        });
-    });
-    document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
-        if (!btn.disabled) {
-            btn.addEventListener("click", (e) => {
-                const bookId = e.currentTarget.getAttribute("data-id");
-                addToCart(Number(bookId));
-            });
-        }
-    });
-    document.querySelectorAll(".edit-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const bookId = e.currentTarget.getAttribute("data-id");
-            editBook(Number(bookId));
-        });
-    });
-    document.querySelectorAll(".delete-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const bookId = e.currentTarget.getAttribute("data-id");
-            deleteBook(Number(bookId));
-        });
-    });
-}
+// function renderPaginatedBooks() {
+//   const start = (currentPage - 1) * booksPerPage;
+//   const end = start + booksPerPage;
+//   const paginatedBooks = filteredBooks.slice(start, end);
+//   if (!bookList) return;
+//   bookList.innerHTML = "";
+//   if (paginatedBooks.length === 0) {
+//     bookList.innerHTML =
+//       '<p class="no-books">No books found matching your criteria.</p>';
+//     return;
+//   }
+//   paginatedBooks.forEach((book) => {
+//     const bookCard = document.createElement("div");
+//     bookCard.className = "book-card";
+//     bookCard.innerHTML = `
+//     <div class="book-image">
+//       <img src="${book.image || "placeholder.jpg"}" alt="${book.title}">
+//     </div>
+//     <div class="book-info">
+//       <h3>${book.title}</h3>
+//       <p><strong>Author:</strong> ${book.author}</p>
+//       <p><strong>Genre:</strong> ${book.genre}</p>
+//       <p><strong>Year:</strong> ${book.year}</p>
+//       <p><strong>Price:</strong> $${book.price}</p>
+//       ${
+//         book.available_copies !== undefined
+//           ? `<p class="availability ${
+//               book.available_copies > 0 ? "in-stock" : "out-of-stock"
+//             }">
+//           ${
+//             book.available_copies > 0
+//               ? `Available: ${book.available_copies}/${book.total_copies}`
+//               : "Out of Stock"
+//           }
+//         </p>`
+//           : ""
+//       }
+//     </div>
+//     <div class="book-actions">
+//       <button class="btn view-btn" data-id="${
+//         book.book_id
+//       }">View Details</button>
+//       <button class="btn add-to-cart-btn" data-id="${book.book_id}" ${
+//       book.available_copies !== undefined && book.available_copies === 0
+//         ? "disabled"
+//         : ""
+//     }>
+//         ${
+//           book.available_copies !== undefined && book.available_copies === 0
+//             ? "Out of Stock"
+//             : "Add to Cart"
+//         }
+//       </button>
+//       ${
+//         currentUser && (currentUser.role_id === 1 || currentUser.role_id === 2)
+//           ? `<button class="btn edit-btn" data-id="${book.book_id}">Edit</button>
+//          <button class="btn delete-btn" data-id="${book.book_id}">Delete</button>`
+//           : ""
+//       }
+//     </div>
+//   `;
+//     bookList.appendChild(bookCard);
+//   });
+// Add event listeners to action buttons
+//   document.querySelectorAll(".view-btn").forEach((btn) => {
+//     btn.addEventListener("click", (e) => {
+//       const bookId = (e.currentTarget as HTMLElement).getAttribute("data-id");
+//       viewBookDetails(Number(bookId));
+//     });
+//   });
+//   document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
+//     if (!(btn as HTMLButtonElement).disabled) {
+//       btn.addEventListener("click", (e) => {
+//         const bookId = (e.currentTarget as HTMLElement).getAttribute("data-id");
+//         addToCart(Number(bookId));
+//       });
+//     }
+//   });
+//   document.querySelectorAll(".edit-btn").forEach((btn) => {
+//     btn.addEventListener("click", (e) => {
+//       const bookId = (e.currentTarget as HTMLElement).getAttribute("data-id");
+//       editBook(Number(bookId));
+//     });
+//   });
+//   document.querySelectorAll(".delete-btn").forEach((btn) => {
+//     btn.addEventListener("click", (e) => {
+//       const bookId = (e.currentTarget as HTMLElement).getAttribute("data-id");
+//       deleteBook(Number(bookId));
+//     });
+//   });
+// }
 // // Modify renderBooks to use pagination
 // function renderBooks() {
 // // Reset to first page when filtering/sorting
