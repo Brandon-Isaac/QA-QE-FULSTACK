@@ -65,46 +65,46 @@ interface UserRequest extends Request {
 
 const app = express();
 const port = process.env.PORT;
-const generateToken = (res: Response, id: string, roleId: number) => {
-  const jwtSecret = process.env.JWT_SECRET;
-  const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
+// const generateToken = (res: Response, id: string, roleId: number) => {
+//   const jwtSecret = process.env.JWT_SECRET;
+//   const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
-  if (!jwtSecret || !refreshSecret) {
-    throw new Error(
-      "JWT_SECRET or REFRESH_TOKEN_SECRET is not defined in environment variables"
-    );
-  }
+//   if (!jwtSecret || !refreshSecret) {
+//     throw new Error(
+//       "JWT_SECRET or REFRESH_TOKEN_SECRET is not defined in environment variables"
+//     );
+//   }
 
-  try {
-    // Use consistent property name: id (not id)
-    const accessToken = jwt.sign({ id, roleId }, jwtSecret, {
-      expiresIn: "15m",
-    });
-    const refreshToken = jwt.sign({ id }, refreshSecret, {
-      expiresIn: "30d",
-    });
+//   try {
+//     // Use consistent property name: id (not id)
+//     const accessToken = jwt.sign({ id, roleId }, jwtSecret, {
+//       expiresIn: "15m",
+//     });
+//     const refreshToken = jwt.sign({ id }, refreshSecret, {
+//       expiresIn: "30d",
+//     });
 
-    // Rest of your code remains the same
-    res.cookie("access_token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== "development",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
+//     // Rest of your code remains the same
+//     res.cookie("access_token", accessToken, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV !== "development",
+//       sameSite: "strict",
+//       maxAge: 15 * 60 * 1000, // 15 minutes
+//     });
 
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== "development",
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
+//     res.cookie("refresh_token", refreshToken, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV !== "development",
+//       sameSite: "strict",
+//       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+//     });
 
-    return { accessToken, refreshToken };
-  } catch (error) {
-    console.error("Error generating JWT:", error);
-    throw new Error("Error generating authentication tokens");
-  }
-};
+//     return { accessToken, refreshToken };
+//   } catch (error) {
+//     console.error("Error generating JWT:", error);
+//     throw new Error("Error generating authentication tokens");
+//   }
+// };
 const asyncHandler = <T = any>(
   fn: (req: Request, res: Response, next: NextFunction) => Promise<T>
 ) => {
