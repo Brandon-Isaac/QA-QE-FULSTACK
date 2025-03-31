@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import pool from "@app/db/db.config";
 import { UserRequest } from "@app/utils/types/userTypes";
 import asyncHandler from "@app/middleware/asyncHandler";

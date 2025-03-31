@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { readFileSync } from "fs";
 import path from "path";
@@ -36,10 +36,10 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 const _dirname = path.resolve();
 
 //synchronously read the file
-const eventData = readFileSync(
-  path.join(_dirname, "src", "db", "eventsData.json"),
-  "utf-8"
-);
+// const eventData = readFileSync(
+//   path.join(_dirname, "src", "db", "eventsData.json"),
+//   "utf-8"
+// );
 
 //create a user (post /api/v1/users)
 //reading an external thing ike a file, a database, etc, cloud

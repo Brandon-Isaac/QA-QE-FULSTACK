@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { RoleRequest } from "@app/utils/types/userRoles";
 import asyncHandler from "@app/middleware/asyncHandler";
 

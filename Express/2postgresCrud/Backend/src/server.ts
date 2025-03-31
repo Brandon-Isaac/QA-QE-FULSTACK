@@ -50,61 +50,66 @@ interface Book {
 // GET all books
 app.get("/books", async (req: Request, res: Response) => {
   try {
-    const result = await pool.query<Book>(
-      "SELECT * FROM public.books ORDER BY id ASC"
-    );
-    const books = result.rows;
-
-    const { search, genre, sortBy } = req.query;
-
-    let filteredBooks = [...books];
-
-    if (search) {
-      const searchTerm = (search as string).toLowerCase().trim();
-      filteredBooks = filteredBooks.filter(
-        (book) =>
-          book.title.toLowerCase().includes(searchTerm) ||
-          book.author.toLowerCase().includes(searchTerm) ||
-          book.description.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    if (genre) {
-      filteredBooks = filteredBooks.filter(
-        (book) => book.genre.toLowerCase() === (genre as string).toLowerCase()
-      );
-    }
-
-    if (sortBy === "year") {
-      filteredBooks.sort((a, b) => a.year - b.year);
-    } else if (sortBy === "title") {
-      filteredBooks.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "author") {
-      filteredBooks.sort((a, b) => a.author.localeCompare(b.author));
-    }
-
-    const stats = {
-      totalBooks: filteredBooks.length,
-      avgPages: filteredBooks.length
-        ? Math.round(
-            filteredBooks.reduce((sum, book) => sum + book.pages, 0) /
-              filteredBooks.length
-          )
-        : 0,
-      oldestBook: filteredBooks.length
-        ? Math.min(...filteredBooks.map((book) => book.year))
-        : null,
-      uniqueGenres: new Set(filteredBooks.map((book) => book.genre)).size,
-    };
-
+    const books = await getBooksFromDatabase();
+    const filteredBooks = filterBooks(books, req.query);
     res.json(filteredBooks);
   } catch (err) {
     console.error("Error getting books:", err);
     res.status(500).json({ error: "Internal server error" });
-    console.error("Error filtering books:", err);
-    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+const getBooksFromDatabase = async (): Promise<Book[]> => {
+  const result = await pool.query<Book>(
+    "SELECT * FROM public.books ORDER BY id ASC"
+  );
+  return result.rows;
+};
+
+const filterBooks = (books: Book[], query: any): Book[] => {
+  let filteredBooks = [...books];
+
+  if (query.search) {
+    filteredBooks = filterBySearch(filteredBooks, query.search);
+  }
+
+  if (query.genre) {
+    filteredBooks = filterByGenre(filteredBooks, query.genre);
+  }
+
+  if (query.sortBy) {
+    filteredBooks = sortByField(filteredBooks, query.sortBy);
+  }
+
+  return filteredBooks;
+};
+
+const filterBySearch = (books: Book[], search: string): Book[] => {
+  const searchTerm = search.toLowerCase().trim();
+  return books.filter(
+    (book) =>
+      book.title.toLowerCase().includes(searchTerm) ||
+      book.author.toLowerCase().includes(searchTerm) ||
+      book.description.toLowerCase().includes(searchTerm)
+  );
+};
+
+const filterByGenre = (books: Book[], genre: string): Book[] => {
+  return books.filter(
+    (book) => book.genre.toLowerCase() === genre.toLowerCase()
+  );
+};
+
+const sortByField = (books: Book[], sortBy: string): Book[] => {
+  if (sortBy === "year") {
+    return books.sort((a, b) => a.year - b.year);
+  } else if (sortBy === "title") {
+    return books.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortBy === "author") {
+    return books.sort((a, b) => a.author.localeCompare(b.author));
+  }
+  return books;
+};
 
 // GET a specific book
 app.get("/books/:id", async (req: Request, res: Response) => {

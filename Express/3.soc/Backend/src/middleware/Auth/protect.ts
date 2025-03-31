@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import {  Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import pool from "@app/db/db.config";
 import { UserRequest } from "../../utils/types/userTypes";
